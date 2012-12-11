@@ -18,9 +18,9 @@ extern "C" {
 
 bool OBJ::read(const QString &path)
 {
-    printf("%s\n", path.toStdString().c_str());
     // Open the file
-    QFile file(path);
+    QString obj = QString("/home/zsalmon/course/cs123/final/celshading/models/ak47.obj");
+    QFile file(obj);
     if (!file.open(QFile::ReadOnly | QFile::Text)) return false;
     QTextStream f(&file);
     QString line;
