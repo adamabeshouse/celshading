@@ -19,7 +19,8 @@ extern "C" {
 bool OBJ::read(const QString &path)
 {
     // Open the file
-    QString obj = QString("/home/zsalmon/course/cs123/final/celshading/models/ak47.obj");
+    QString obj = QString("/home/zsalmon/course/cs123/final/celshading/models/dragon.obj");
+    //QString obj = QString("/home/zsalmon/course/cs123/final/celshading/models/hj_media_studios_-_lego_minifigure.obj");
     QFile file(obj);
     if (!file.open(QFile::ReadOnly | QFile::Text)) return false;
     QTextStream f(&file);
@@ -32,16 +33,31 @@ bool OBJ::read(const QString &path)
 
     // Read the file
     QRegExp spaces("\\s+");
+    Vector3 currKA;
+    Vector3 currKD;
     do {
         line = f.readLine().trimmed();
         QStringList parts = line.split(spaces);
         if (parts.isEmpty()) continue;
-
-        if (parts[0] == "v" && parts.count() >= 4) {
+        if (parts[0] == "ka" && parts.count() >= 4) {
             float x = parts[1].toFloat();
             float y = parts[2].toFloat();
             float z = parts[3].toFloat();
-            vertices += Vector3(x, y, z);
+            currKA = Vector3(x,y,z);
+        } else if(parts[0] == "kd" && parts.count() >= 4) {
+           // printf("called\n");
+            float x = parts[1].toFloat();
+            float y = parts[2].toFloat();
+            float z = parts[3].toFloat();
+            printf("vector3 x %f y %f z %f\n", x ,y, z);
+            currKD = Vector3(x,y,z);
+        } else if (parts[0] == "v" && parts.count() >= 4) {
+           // printf("vertexes added\n");
+            float x = parts[1].toFloat();
+            float y = parts[2].toFloat();
+            float z = parts[3].toFloat();
+
+            vertices += Vertex(x,y,z,currKA,currKD);
             //Bounding box info to position camera correctly
             boundingBox.maxX = max(x, boundingBox.maxX );
             boundingBox.minX = min(x, boundingBox.minX );
@@ -88,12 +104,17 @@ void OBJ::draw() const
     for(int i = 0; i<size; i++){
         Triangle tri = triangles.at(i);
         glBegin(GL_TRIANGLES);
+        //printf("red is %f\n", vertices.at(tri.a.vertex).kd.x);
+        glColor3f(vertices.at(tri.a.vertex).kd.x, vertices.at(tri.a.vertex).kd.y, vertices.at(tri.a.vertex).kd.z);
         glNormal3f(normals.at(tri.a.normal).x, normals.at(tri.a.normal).y, normals.at(tri.a.normal).z);
-        glVertex3f(vertices.at(tri.a.vertex).x, vertices.at(tri.a.vertex).y, vertices.at(tri.a.vertex).z);
+       // printf("normal is %d", tri.a.normal);
+        glVertex3f(50*vertices.at(tri.a.vertex).coord.x, 50*vertices.at(tri.a.vertex).coord.y, 50*vertices.at(tri.a.vertex).coord.z);
+        glColor3f(vertices.at(tri.b.vertex).kd.x, vertices.at(tri.b.vertex).kd.y, vertices.at(tri.b.vertex).kd.z);
         glNormal3f(normals.at(tri.b.normal).x, normals.at(tri.b.normal).y, normals.at(tri.b.normal).z);
-        glVertex3f(vertices.at(tri.b.vertex).x, vertices.at(tri.b.vertex).y, vertices.at(tri.b.vertex).z);
+        glVertex3f(50*vertices.at(tri.b.vertex).coord.x, 50*vertices.at(tri.b.vertex).coord.y, 50*vertices.at(tri.b.vertex).coord.z);
+        glColor3f(vertices.at(tri.c.vertex).kd.x, vertices.at(tri.c.vertex).kd.y, vertices.at(tri.c.vertex).kd.z);
         glNormal3f(normals.at(tri.c.normal).x, normals.at(tri.c.normal).y, normals.at(tri.c.normal).z);
-        glVertex3f(vertices.at(tri.c.vertex).x, vertices.at(tri.c.vertex).y, vertices.at(tri.c.vertex).z);
+        glVertex3f(50*vertices.at(tri.c.vertex).coord.x, 50*vertices.at(tri.c.vertex).coord.y, 50*vertices.at(tri.c.vertex).coord.z);
 
     }
     glEnd();
@@ -111,7 +132,7 @@ void OBJ::initVbo(){
      * so you can rightly expect that the triangles, vertices
      * and normals lists are completely filled in.
      */
-    int buffersize = triangles.size()*3*2*3;
+    /*int buffersize = triangles.size()*3*2*3;
 
     glGenBuffers(1, &m_vboBinding);
     glBindBuffer(GL_ARRAY_BUFFER, m_vboBinding);
@@ -154,7 +175,7 @@ void OBJ::initVbo(){
     glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    delete[] data;
+    delete[] data;*/
 }
 
 void OBJ::vboDraw() const
@@ -167,12 +188,13 @@ void OBJ::vboDraw() const
      * using the vbo.
      *
      */
+    /*
     glBindBuffer(GL_ARRAY_BUFFER, m_vboBinding);
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
     glVertexPointer(3, GL_FLOAT, 6*(sizeof(float)), (void*) 0);
     glNormalPointer(GL_FLOAT, 6*(sizeof(float)), (void*) (3*sizeof(float)));
-    glDrawArrays(GL_TRIANGLES,0 ,triangles.size()*3*2*3);
+    glDrawArrays(GL_TRIANGLES,0 ,triangles.size()*3*2*3);*/
 }
 
 static QString str(const Vector2 &v) { return QString("%1 %2").arg(v.x).arg(v.y); }
@@ -195,7 +217,7 @@ bool OBJ::write(const QString &path) const
     QTextStream f(&file);
 
     // Write the file
-    foreach (const Vector3 &vertex, vertices) f << "v " << str(vertex) << '\n';
+    foreach (const Vertex &vertex, vertices) f << "v " << str(vertex.coord) << '\n';
     foreach (const Vector3 &normal, normals) f << "vn " << str(normal) << '\n';
     foreach (const Triangle &tri, triangles) f << "f " << str(tri.a) << ' ' << str(tri.b) << ' ' << str(tri.c) << '\n';
 

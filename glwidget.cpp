@@ -67,7 +67,7 @@ void GLWidget::initializeGL()
     // Set up material properties
     GLfloat shiny = 50;
     GLfloat ambientMat[] = {0.0f, 0.0f, 0.0f, 0.0f};
-    GLfloat diffuseMat[] = { 1.0f, 0.0f, 0.0, 0.0f };
+    GLfloat diffuseMat[] = { 0.0f, 1.0f, 0.0, 0.0f };
     GLfloat specularMat[] = { 0.5f, 0.5f, 0.5f, 1.0f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientMat);
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseMat);
@@ -105,7 +105,7 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-    glColor3f(.5,.5,1);
+    //glColor3f(.5,.5,1);
     glPushMatrix();
     if (m_shouldRotate) m_camera.theta += .005; ;
     if (m_useVbo){

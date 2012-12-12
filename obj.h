@@ -21,6 +21,25 @@ public:
         Index(int vertex, int normal) : vertex(vertex), normal(normal) {}
     };
 
+    struct Vertex
+    {
+        Vector3 coord;
+        Vector3 ka;
+       // Vector3 ks;
+        Vector3 kd;
+        Vertex() {
+            coord = Vector3();
+            ka = Vector3();
+            kd = Vector3();
+        }
+
+        Vertex(float x, float y, float z, Vector3 _ka, Vector3 _kd) {
+            coord = Vector3(x,y,z);
+            ka = Vector3(_ka.x, _ka.y, _ka.z);
+            kd = Vector3(_kd.x, _kd.y, _kd.z);
+        }
+    };
+
     struct Triangle
     {
         Index a, b, c;
@@ -39,10 +58,9 @@ public:
     };
 
     BoundingBox boundingBox;
-    QVector<Vector3> vertices;
+    QVector<Vertex> vertices;
     QVector<Vector3> normals;
     QVector<Triangle> triangles;
-
     unsigned int m_vboBinding;
 
     void draw() const;
