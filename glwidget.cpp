@@ -19,7 +19,7 @@ GLWidget::GLWidget(QWidget *parent) :
     m_camera.zoom = 3.5f;
     m_camera.theta = M_PI * 1.5f, m_camera.phi = -0.2f;
     m_camera.fovy = 60.f;
-
+    m_numObjs = 0;
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
 
     m_timer.start(1000.0f / MAX_FPS);
@@ -77,10 +77,11 @@ void GLWidget::initializeGL()
     // Set the screen color when the color buffer is cleared (in RGBA format)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    if (! m_obj.read(m_defaultModel)){
+    addObjects();
+  /*  if (! m_obj.read(m_defaultModel)){
         std::cout << "it didnt load! call a ta over" << endl;
         exit(1);
-    }
+    }*/
 
     glEnable(GL_LIGHTING);// Set up material properties
     glEnable(GL_LIGHT0);
@@ -109,10 +110,10 @@ void GLWidget::paintGL()
     glPushMatrix();
     if (m_shouldRotate) m_camera.theta += .005; ;
     if (m_useVbo){
-        m_obj.vboDraw();
+        objects.at(0).vboDraw();
         //m_obj.vboDraw();
     }else{
-        m_obj.draw();
+        objects.at(0).draw();
         //m_obj.draw();
     }
     glPopMatrix();
@@ -130,6 +131,16 @@ void GLWidget::resizeGL(int width, int height)
     glViewport(0, 0, width, height);
 }
 
+void GLWidget::addObjects(){
+    OBJ dragon;
+    if (! dragon.read("/home/zsalmon/course/cs123/final/celshading/models/dragon.obj")){
+        std::cout << "it didnt load! call a ta over" << endl;
+        exit(1);
+
+    }
+    objects.append(dragon);
+    m_obj=dragon;
+}
 
 /**
   Specifies to Qt what to do when the widget needs to be updated.
@@ -159,7 +170,7 @@ void GLWidget::paintText()
 }
 
 void GLWidget::fileOpen()
-{
+{/*
 
     m_captureMouse = false;
     QString path = QFileDialog::getOpenFileName(this, "Open", "/course/cs123/data/mesh");
@@ -176,11 +187,12 @@ void GLWidget::fileOpen()
         QMessageBox::information(this, "Error", text, QMessageBox::Ok);
     } else{
         //BoundingBox box = *m_obj.getBoundingBox();
+        //set camera center right here
         m_camera.center = Vector3(m_obj.boundingBox.maxX * 1.5,  (m_obj.boundingBox.maxY + m_obj.boundingBox.minY) /2, m_obj.boundingBox.maxZ * 1.5);
         m_camera.lookAt(m_obj.boundingBox.center - m_camera.center);
     }
     m_captureMouse = true;
-    m_prevTime = m_clock.elapsed();
+    m_prevTime = m_clock.elapsed();*/
 }
 
 void GLWidget::toggleRotate()

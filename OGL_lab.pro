@@ -16,8 +16,7 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     glwidget.cpp \
     obj.cpp \
-    camera.cpp \
-    scene.cpp
+    camera.cpp
 
 HEADERS  += mainwindow.h \
     glwidget.h \

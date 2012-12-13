@@ -31,6 +31,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void applyPerspectiveCamera(float width, float height);
+    void addObjects();
 
 protected slots:
     void tick();
@@ -47,6 +48,8 @@ private:
     float m_increment;
     float m_prevTime;
     OBJ m_obj;
+    QVector<OBJ> objects;         //NEW added for scene
+    int m_numObjs;            //NEW added for scene
     QFont m_font;
     QString m_defaultModel;
     bool m_captureMouse;
