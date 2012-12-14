@@ -4,6 +4,8 @@
 #include "vector.h"
 #include <QVector>
 #include <float.h>
+#include <QGLShaderProgram>
+#include "resourceloader.h"
 
 struct Triangle;
 
@@ -60,13 +62,18 @@ public:
     BoundingBox boundingBox;
     QVector<Vertex> vertices;
     QVector<Vector3> normals;
+	QVector<Vector3> vertexNormals; //normals which directly correspond with a vertex
+	QVector<int> vertexNormalContributions; //keeps track of how many vectors went into the average
     QVector<Triangle> triangles;
+	QGLShaderProgram * m_toonShader;
     unsigned int m_vboBinding;
 
     void draw() const;
     void vboDraw() const;
     bool read(const QString &path);
     bool write(const QString &path) const;
+	Vector3 generateNormal(Vertex a, Vertex b, Vertex c) const;
+	void computeNormals();
 private:
     Index getIndex(const QString &str) const;
     void initVbo();

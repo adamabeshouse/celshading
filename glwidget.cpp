@@ -139,13 +139,13 @@ void GLWidget::resizeGL(int width, int height)
 
 void GLWidget::addObjects(){
     OBJ dragon;
-    if (! dragon.read("/home/zsalmon/course/cs123/final/celshading/models/dragon.obj")){
+	if (! dragon.read("models/dragon.obj")){
         std::cout << "it didnt load! call a ta over" << endl;
         exit(1);
 
     }
     OBJ lego;
-    if (! lego.read("/home/zsalmon/course/cs123/final/celshading/models/lego.obj")){
+	if (! lego.read("models/lego.obj")){
         std::cout << "it didnt load! call a ta over" << endl;
         exit(1);
 

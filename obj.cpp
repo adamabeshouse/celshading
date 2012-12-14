@@ -7,6 +7,8 @@
 #include <QTextStream>
 #include <iostream>
 #include "vector.h"
+#include <QGLShaderProgram>
+//#include "qgl.h"
 
 #ifndef __APPLE__
 extern "C" {
@@ -18,6 +20,7 @@ extern "C" {
 
 bool OBJ::read(const QString &path)
 {
+	//m_toonShader = ResourceLoader::newFragShaderProgram(context(), "cartoon.frag");
     // Open the file
     QString obj = QString(path);
 
@@ -29,6 +32,8 @@ bool OBJ::read(const QString &path)
 
     vertices.clear();
     normals.clear();
+	vertexNormals.clear();
+	vertexNormalContributions.clear();
     triangles.clear();
     boundingBox = BoundingBox();
 
@@ -59,6 +64,8 @@ bool OBJ::read(const QString &path)
             float z = parts[3].toFloat();
 
             vertices += Vertex(x,y,z,currKA,currKD);
+			vertexNormals += Vector3(0,0,0);
+			vertexNormalContributions += 0;
             //Bounding box info to position camera correctly
             boundingBox.maxX = max(x, boundingBox.maxX );
             boundingBox.minX = min(x, boundingBox.minX );
@@ -83,12 +90,25 @@ bool OBJ::read(const QString &path)
     boundingBox.center = Vector3((boundingBox.maxX + boundingBox.minX) / 2,
                                  (boundingBox.maxY + boundingBox.minY) / 2,
                                  (boundingBox.maxZ + boundingBox.minZ) / 2);
+	computeNormals();
     initVbo();
 
     return true;
 }
 
-
+void OBJ::computeNormals()
+{
+	for(int i = 0; i < triangles.size() ; i++) {
+		Triangle tri = triangles.at(i);
+		Vector3 normal = this->generateNormal(vertices.at(tri.a.vertex), vertices.at(tri.b.vertex), vertices.at(tri.c.vertex));
+		vertexNormals[tri.a.vertex] = (vertexNormalContributions[tri.a.vertex]*vertexNormals[tri.a.vertex] + normal)/(vertexNormalContributions[tri.a.vertex]+1);
+		vertexNormalContributions[tri.a.vertex] += 1;
+		vertexNormals[tri.b.vertex] = (vertexNormalContributions[tri.b.vertex]*vertexNormals[tri.b.vertex] + normal)/(vertexNormalContributions[tri.b.vertex]+1);
+		vertexNormalContributions[tri.b.vertex] += 1;
+		vertexNormals[tri.c.vertex] = (vertexNormalContributions[tri.c.vertex]*vertexNormals[tri.c.vertex] + normal)/(vertexNormalContributions[tri.c.vertex]+1);
+		vertexNormalContributions[tri.c.vertex] += 1;
+	}
+}
 
 void OBJ::draw() const
 {
@@ -101,23 +121,28 @@ void OBJ::draw() const
      * in here.
      *
      */
+	//m_toonShader->bind();
     int size = triangles.size();
     for(int i = 0; i<size; i++){
         Triangle tri = triangles.at(i);
-        glBegin(GL_TRIANGLES);
-        //printf("red is %f\n", vertices.at(tri.a.vertex).kd.x);
+		glBegin(GL_TRIANGLES);
+		//Vector3 normal = this->generateNormal(vertices.at(tri.a.vertex), vertices.at(tri.b.vertex), vertices.at(tri.c.vertex));
         glColor3f(vertices.at(tri.a.vertex).kd.x, vertices.at(tri.a.vertex).kd.y, vertices.at(tri.a.vertex).kd.z);
+		glNormal3f(vertexNormals[tri.a.vertex].x, vertexNormals[tri.a.vertex].y, vertexNormals[tri.a.vertex].z);
        // glNormal3f(normals.at(tri.a.normal).x, normals.at(tri.a.normal).y, normals.at(tri.a.normal).z);
        // printf("normal is %d", tri.a.normal);
         glVertex3f(50*vertices.at(tri.a.vertex).coord.x, 50*vertices.at(tri.a.vertex).coord.y, 50*vertices.at(tri.a.vertex).coord.z);
-        glColor3f(vertices.at(tri.b.vertex).kd.x, vertices.at(tri.b.vertex).kd.y, vertices.at(tri.b.vertex).kd.z);
+		glColor3f(vertices.at(tri.b.vertex).kd.x, vertices.at(tri.b.vertex).kd.y, vertices.at(tri.b.vertex).kd.z);
+		glNormal3f(vertexNormals[tri.b.vertex].x, vertexNormals[tri.b.vertex].y, vertexNormals[tri.b.vertex].z);
         //glNormal3f(normals.at(tri.b.normal).x, normals.at(tri.b.normal).y, normals.at(tri.b.normal).z);
         glVertex3f(50*vertices.at(tri.b.vertex).coord.x, 50*vertices.at(tri.b.vertex).coord.y, 50*vertices.at(tri.b.vertex).coord.z);
-        glColor3f(vertices.at(tri.c.vertex).kd.x, vertices.at(tri.c.vertex).kd.y, vertices.at(tri.c.vertex).kd.z);
+		glColor3f(vertices.at(tri.c.vertex).kd.x, vertices.at(tri.c.vertex).kd.y, vertices.at(tri.c.vertex).kd.z);
+		glNormal3f(vertexNormals[tri.c.vertex].x, vertexNormals[tri.c.vertex].y, vertexNormals[tri.c.vertex].z);
        // glNormal3f(normals.at(tri.c.normal).x, normals.at(tri.c.normal).y, normals.at(tri.c.normal).z);
         glVertex3f(50*vertices.at(tri.c.vertex).coord.x, 50*vertices.at(tri.c.vertex).coord.y, 50*vertices.at(tri.c.vertex).coord.z);
 
     }
+	//m_toonShader->release();
     glEnd();
 }
 
@@ -152,6 +177,7 @@ void OBJ::initVbo(){
 
 
 
+		//printf("red is %f\n", vertices.at(tri.a.vertex).kd.x);
         data[index+6]=vertices.at(tri.b.vertex).x;
         data[index+7]=vertices.at(tri.b.vertex).y;
         data[index+8]=vertices.at(tri.b.vertex).z;
@@ -191,11 +217,21 @@ void OBJ::vboDraw() const
      */
     /*
     glBindBuffer(GL_ARRAY_BUFFER, m_vboBinding);
-    glEnableClientState(GL_VERTEX_ARRAY);
+	(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
     glVertexPointer(3, GL_FLOAT, 6*(sizeof(float)), (void*) 0);
     glNormalPointer(GL_FLOAT, 6*(sizeof(float)), (void*) (3*sizeof(float)));
     glDrawArrays(GL_TRIANGLES,0 ,triangles.size()*3*2*3);*/
+}
+
+Vector3 OBJ::generateNormal(Vertex v1, Vertex v2, Vertex v3) const {
+	/* generates a vector perpendicular to the plane of v1, v2, and v3
+	   (assuming they are given in counterclockwise order)  */
+	Vector3 vec1 = v2.coord - v1.coord;
+	Vector3 vec2 = v3.coord - v1.coord;
+	Vector3 norm = vec2.cross(vec1);
+	norm.normalize();
+	return norm;
 }
 
 static QString str(const Vector2 &v) { return QString("%1 %2").arg(v.x).arg(v.y); }
