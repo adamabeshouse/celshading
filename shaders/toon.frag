@@ -1,7 +1,7 @@
 varying float lightIntensity;
-
+varying vec4 color;
 void main(void) {
-        vec4 color = vec4(1.0, 0, 0, 0);
+
         float finIntensity;
         if(lightIntensity>.9){
             finIntensity=.95;
