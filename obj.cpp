@@ -19,7 +19,8 @@ extern "C" {
 bool OBJ::read(const QString &path)
 {
     // Open the file
-    QString obj = QString("/home/zsalmon/course/cs123/final/celshading/models/dragon.obj");
+    QString obj = QString(path);
+
     //QString obj = QString("/home/zsalmon/course/cs123/final/celshading/models/hj_media_studios_-_lego_minifigure.obj");
     QFile file(obj);
     if (!file.open(QFile::ReadOnly | QFile::Text)) return false;
@@ -106,14 +107,14 @@ void OBJ::draw() const
         glBegin(GL_TRIANGLES);
         //printf("red is %f\n", vertices.at(tri.a.vertex).kd.x);
         glColor3f(vertices.at(tri.a.vertex).kd.x, vertices.at(tri.a.vertex).kd.y, vertices.at(tri.a.vertex).kd.z);
-        glNormal3f(normals.at(tri.a.normal).x, normals.at(tri.a.normal).y, normals.at(tri.a.normal).z);
+       // glNormal3f(normals.at(tri.a.normal).x, normals.at(tri.a.normal).y, normals.at(tri.a.normal).z);
        // printf("normal is %d", tri.a.normal);
         glVertex3f(50*vertices.at(tri.a.vertex).coord.x, 50*vertices.at(tri.a.vertex).coord.y, 50*vertices.at(tri.a.vertex).coord.z);
         glColor3f(vertices.at(tri.b.vertex).kd.x, vertices.at(tri.b.vertex).kd.y, vertices.at(tri.b.vertex).kd.z);
-        glNormal3f(normals.at(tri.b.normal).x, normals.at(tri.b.normal).y, normals.at(tri.b.normal).z);
+        //glNormal3f(normals.at(tri.b.normal).x, normals.at(tri.b.normal).y, normals.at(tri.b.normal).z);
         glVertex3f(50*vertices.at(tri.b.vertex).coord.x, 50*vertices.at(tri.b.vertex).coord.y, 50*vertices.at(tri.b.vertex).coord.z);
         glColor3f(vertices.at(tri.c.vertex).kd.x, vertices.at(tri.c.vertex).kd.y, vertices.at(tri.c.vertex).kd.z);
-        glNormal3f(normals.at(tri.c.normal).x, normals.at(tri.c.normal).y, normals.at(tri.c.normal).z);
+       // glNormal3f(normals.at(tri.c.normal).x, normals.at(tri.c.normal).y, normals.at(tri.c.normal).z);
         glVertex3f(50*vertices.at(tri.c.vertex).coord.x, 50*vertices.at(tri.c.vertex).coord.y, 50*vertices.at(tri.c.vertex).coord.z);
 
     }

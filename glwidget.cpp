@@ -78,10 +78,7 @@ void GLWidget::initializeGL()
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     addObjects();
-  /*  if (! m_obj.read(m_defaultModel)){
-        std::cout << "it didnt load! call a ta over" << endl;
-        exit(1);
-    }*/
+
 
     glEnable(GL_LIGHTING);// Set up material properties
     glEnable(GL_LIGHT0);
@@ -113,7 +110,16 @@ void GLWidget::paintGL()
         objects.at(0).vboDraw();
         //m_obj.vboDraw();
     }else{
+;
+        glEnable(GL_NORMALIZE);
+        glMatrixMode(GL_MODELVIEW);
         objects.at(0).draw();
+        glPushMatrix();
+        glTranslatef(0.0, 0.0, 15.0);
+        glScalef(.2, .2, .2);
+        objects.at(1).draw();
+        glPopMatrix();
+
         //m_obj.draw();
     }
     glPopMatrix();
@@ -138,8 +144,15 @@ void GLWidget::addObjects(){
         exit(1);
 
     }
+    OBJ lego;
+    if (! lego.read("/home/zsalmon/course/cs123/final/celshading/models/lego.obj")){
+        std::cout << "it didnt load! call a ta over" << endl;
+        exit(1);
+
+    }
     objects.append(dragon);
-    m_obj=dragon;
+    objects.append(lego);
+   // m_obj=dragon;
 }
 
 /**
