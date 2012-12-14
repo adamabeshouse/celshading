@@ -7,6 +7,8 @@
 #include <QFont>
 #include "camera.h"
 #include "obj.h"
+class QGLShaderProgram;
+class QGLFramebufferObject;
 
 class GLWidget : public QGLWidget
 {
@@ -47,6 +49,10 @@ private:
     float m_prevFps;
     float m_increment;
     float m_prevTime;
+    QHash<QString, QGLShaderProgram *> m_shaderPrograms; // hash map of all shader programs
+    QHash<QString, QGLFramebufferObject *> m_framebufferObjects; // hash map of all framebuffer objects
+    QGLShaderProgram * newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader);
+    void createShaderPrograms();
     OBJ m_obj;
     QVector<OBJ> objects;         //NEW added for scene
     int m_numObjs;            //NEW added for scene

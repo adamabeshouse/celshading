@@ -74,6 +74,8 @@ void GLWidget::initializeGL()
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specularMat);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &shiny);
 
+    //set up shaders
+    createShaderPrograms();
     // Set the screen color when the color buffer is cleared (in RGBA format)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -102,7 +104,7 @@ void GLWidget::paintGL()
     // Clear the color and depth buffers to the current glClearColor
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-
+    glEnable(GL_CULL_FACE);
     //glColor3f(.5,.5,1);
     glPushMatrix();
     if (m_shouldRotate) m_camera.theta += .005; ;
@@ -112,13 +114,15 @@ void GLWidget::paintGL()
     }else{
 ;
         glEnable(GL_NORMALIZE);
-        glMatrixMode(GL_MODELVIEW);
+      //  glMatrixMode(GL_MODELVIEW);
+        m_shaderPrograms["toon"]->bind();               //bind shader
         objects.at(0).draw();
         glPushMatrix();
         glTranslatef(0.0, 0.0, 15.0);
         glScalef(.2, .2, .2);
         objects.at(1).draw();
         glPopMatrix();
+        m_shaderPrograms["toon"]->release();            //unbind shader
 
         //m_obj.draw();
     }
@@ -274,5 +278,19 @@ void GLWidget::wheelEvent(QWheelEvent *event)
     {
         m_camera.mouseWheel(event->delta() );
     }
+}
+
+void GLWidget::createShaderPrograms()
+{
+    const QGLContext *ctx = context();
+    m_shaderPrograms["toon"] = newShaderProgram(ctx, "shaders/toon.vert", "shaders/toon.frag");
+}
+QGLShaderProgram * GLWidget::newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader)
+{
+    QGLShaderProgram *program = new QGLShaderProgram(context);
+    program->addShaderFromSourceFile(QGLShader::Vertex, vertShader);
+    program->addShaderFromSourceFile(QGLShader::Fragment, fragShader);
+    program->link();
+    return program;
 }
 
