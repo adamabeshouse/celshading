@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
+#include "QGLFramebufferObject"
 
 using namespace std;
 
@@ -21,6 +22,7 @@ GLWidget::GLWidget(QWidget *parent) :
     m_camera.fovy = 60.f;
     m_numObjs = 0;
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
+	this->createFramebufferObjects(this->width(), this->height());
 
     m_timer.start(1000.0f / MAX_FPS);
 }
@@ -86,6 +88,20 @@ void GLWidget::initializeGL()
     glEnable(GL_LIGHT0);
     // TODO: Put any additional initialization code here
 }
+/**
+  Allocate framebuffer objects.
+
+  @param width: the viewport width
+  @param height: the viewport height
+ **/
+void GLWidget::createFramebufferObjects(int width, int height)
+{
+	// Allocate the main framebuffer object for rendering the scene to
+	m_framebufferObjects["fbo_0"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment,GL_TEXTURE_2D, GL_RGB16F_ARB);
+	//FBO for doing edge detect
+	//m_framebufferObjects["fbo_1"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment,
+		//													 GL_TEXTURE_2D, GL_RGB16F_ARB);
+}
 
 /**
     This is called every time the screen is repainted.
@@ -115,20 +131,71 @@ void GLWidget::paintGL()
 ;
         glEnable(GL_NORMALIZE);
       //  glMatrixMode(GL_MODELVIEW);
-        m_shaderPrograms["toon"]->bind();               //bind shader
+		//m_framebufferObjects["fbo_0"]->bind();
+		m_shaderPrograms["toon"]->bind();               //bind shader
         objects.at(0).draw();
         glPushMatrix();
         glTranslatef(0.0, 0.0, 15.0);
         glScalef(.2, .2, .2);
         objects.at(1).draw();
-        glPopMatrix();
-        m_shaderPrograms["toon"]->release();            //unbind shader
+		glPopMatrix();
+		m_shaderPrograms["toon"]->release();            //unbind shader
+		//m_framebufferObjects["fbo_0"]->release();
+		/*//now do outlines
+		m_framebufferObjects["fbo_1"]->bind();
+		m_shaderPrograms["edge_detect"]->bind();
+		glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_0"]->texture());
+		renderTexturedQuad(width, height);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		m_shaderPrograms["edge_detect"]->release();
+		m_framebufferObjects["fbo_1"]->release();*/
+
+		//now draw the scene to the screen as a textured quad
+		/*applyOrthogonalCamera(width, height);
+		glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_0"]->texture());
+		renderTexturedQuad(width, height);
+		glBindTexture(GL_TEXTURE_2D,0);*/
 
         //m_obj.draw();
     }
     glPopMatrix();
 
     paintText();
+}
+
+/**
+  Called to switch to an orthogonal OpenGL camera.
+  Useful for rending a textured quad across the whole screen.
+
+  @param width: the viewport width
+  @param height: the viewport height
+**/
+void GLWidget::applyOrthogonalCamera(float width, float height)
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0.f, width, 0.f, height);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+
+
+void GLWidget::renderTexturedQuad(int width, int height) {
+	// Clamp value to edge of texture when texture index is out of bounds
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Draw the  quad
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex2f(0.0f, 0.0f);
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex2f(width, 0.0f);
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex2f(width, height);
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex2f(0.0f, height);
+	glEnd();
 }
 
 /**
@@ -139,6 +206,15 @@ void GLWidget::resizeGL(int width, int height)
 {
     // Set the viewport to fill the screen
     glViewport(0, 0, width, height);
+
+	// Reallocate the framebuffers with the new window dimensions
+	foreach (QGLFramebufferObject *fbo, m_framebufferObjects)
+	{
+		const QString &key = m_framebufferObjects.key(fbo);
+		QGLFramebufferObjectFormat format = fbo->format();
+		delete fbo;
+		m_framebufferObjects[key] = new QGLFramebufferObject(width, height, format);
+	}
 }
 
 void GLWidget::addObjects(){
@@ -284,6 +360,7 @@ void GLWidget::createShaderPrograms()
 {
     const QGLContext *ctx = context();
     m_shaderPrograms["toon"] = newShaderProgram(ctx, "shaders/toon.vert", "shaders/toon.frag");
+	//m_shaderPrograms["edge_detect"] = newFragShaderProgram(ctx, "shaders/edge_detect.frag");
 }
 QGLShaderProgram * GLWidget::newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader)
 {
@@ -292,5 +369,12 @@ QGLShaderProgram * GLWidget::newShaderProgram(const QGLContext *context, QString
     program->addShaderFromSourceFile(QGLShader::Fragment, fragShader);
     program->link();
     return program;
+}
+QGLShaderProgram * GLWidget::newFragShaderProgram(const QGLContext *context, QString fragShader)
+{
+	QGLShaderProgram *program = new QGLShaderProgram(context);
+	program->addShaderFromSourceFile(QGLShader::Fragment, fragShader);
+	program->link();
+	return program;
 }
 

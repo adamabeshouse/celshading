@@ -34,6 +34,8 @@ protected:
     void mousePressEvent(QMouseEvent *event);
     void applyPerspectiveCamera(float width, float height);
     void addObjects();
+	void renderTexturedQuad(int width, int height);
+	void applyOrthogonalCamera(float width, float height);
 
 protected slots:
     void tick();
@@ -52,6 +54,8 @@ private:
     QHash<QString, QGLShaderProgram *> m_shaderPrograms; // hash map of all shader programs
     QHash<QString, QGLFramebufferObject *> m_framebufferObjects; // hash map of all framebuffer objects
     QGLShaderProgram * newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader);
+	QGLShaderProgram * newFragShaderProgram(const QGLContext *context, QString fragShader);
+	void createFramebufferObjects(int width, int height);
     void createShaderPrograms();
     OBJ m_obj;
     QVector<OBJ> objects;         //NEW added for scene
