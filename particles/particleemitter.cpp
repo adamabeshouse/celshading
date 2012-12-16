@@ -114,7 +114,7 @@ void ParticleEmitter::drawParticles()
 
    //frontside
    glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
-   m_sphere.drawTriangles();
+  // m_sphere.drawTriangles();
    /*glVertex3f(x,y,z);
    glTexCoord2f(0,1);
    glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));

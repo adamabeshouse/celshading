@@ -39,8 +39,8 @@ void Shape::freeVertexes() {
 void Shape::renderNormals() {
     for(int i=0;i<m_vertex_count;i++) {
         Vertex3f *tmp = m_vertex[i];
-		float3 normal = float3(tmp->m_nx, tmp->m_ny, tmp->m_nz, 0);
-		float3 pt = float3(tmp->m_x, tmp->m_y, tmp->m_z, 1);
-        s->renderNormal(pt, normal);
+                //float3 normal = float3(tmp->m_nx, tmp->m_ny, tmp->m_nz, 0);
+                //float3 pt = float3(tmp->m_x, tmp->m_y, tmp->m_z, 1);
+        //s->renderNormal(pt, normal);
     }
 }
