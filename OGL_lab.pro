@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     particles/particleemitter.cpp \
     ShapesSphere.cpp \
     Shape.cpp \
-    Vertex3f.cpp
+    Vertex3f.cpp \
+    particles/rain.cpp
 
 HEADERS  += mainwindow.h \
     glwidget.h \
@@ -38,7 +39,8 @@ HEADERS  += mainwindow.h \
     common.h \
     ShapesSphere.h \
     Shape.h \
-    Vertex3f.h
+    Vertex3f.h \
+    particles/rain.h
 
 FORMS    += mainwindow.ui
 

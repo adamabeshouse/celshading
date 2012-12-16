@@ -12,7 +12,7 @@ ParticleEmitter::ParticleEmitter(GLuint textureId, float3 color, float3 velocity
 	m_velocity = float3(0,1,0);
 	m_fuzziness = 10;
 	m_scale = 5;
-	m_textureID = textureId;
+        m_textureID = textureId;
     m_particles = new Particle[maxParticles];
     resetParticles();
 

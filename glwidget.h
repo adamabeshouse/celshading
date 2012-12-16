@@ -8,6 +8,7 @@
 #include "camera.h"
 #include "obj.h"
 #include "particles/particleemitter.h"
+#include "particles/rain.h"
 class QGLShaderProgram;
 class QGLFramebufferObject;
 
@@ -76,6 +77,7 @@ private:
 	unsigned int m_numTrees;
 	float m_treeRadius;
 	ParticleEmitter m_fire;
+        Rain m_rain;
 	ParticleEmitter m_fire2;
 	QVector<float> m_treeAngles;
 	QVector<float> m_treeSizes;

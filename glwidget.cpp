@@ -7,6 +7,7 @@
 #include "QGLFramebufferObject"
 #include "resourceloader.h"
 #include "particles/particleemitter.h"
+#include "assert.h"
 
 using namespace std;
 
@@ -18,15 +19,13 @@ GLWidget::GLWidget(QWidget *parent) :
 {
     // Set up the camera
     m_camera.center = Vector3(0.f, 50.f, 0.f);
-	m_cameraTarget = m_camera.center;
+    m_cameraTarget = m_camera.center;
     m_camera.up = Vector3(0.f, 1.f, 0.f);
     m_camera.zoom = 3.5f;
     m_camera.theta = M_PI * 1.5f, m_camera.phi = -0.2f;
     m_camera.fovy = 60.f;
     m_numObjs = 0;
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
-
-
 	m_numTrees = 25;
 	m_treeRadius = 5.0;
 	for(unsigned int i = 0 ; i < m_numTrees; i++) {
@@ -52,7 +51,7 @@ void GLWidget::initializeGL()
     // Enable back-face culling, meaning only the front side of every face is rendered
 	//glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glDisable(GL_DITHER);
+  //  glDisable(GL_DITHER);
     // Specify that the front face is represented by vertices in counterclockwise order (this is the default)
     glFrontFace(GL_CCW);
 
@@ -108,10 +107,10 @@ void GLWidget::createFramebufferObjects(int width, int height)
 {
 	// Allocate the main framebuffer object for rendering the scene to
         m_framebufferObjects["fbo_0"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::Depth,GL_TEXTURE_2D, GL_RGB16F_ARB);
-		m_framebufferObjects["fbo_0"]->format().setSamples(16);
+        //m_framebufferObjects["fbo_0"]->format().setSamples(16);
 	//FBO for doing edge detect
-		m_framebufferObjects["fbo_1"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment, GL_TEXTURE_2D, GL_RGB16F_ARB);
-		m_framebufferObjects["fbo_2"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment, GL_TEXTURE_2D, GL_RGB16F_ARB);
+	m_framebufferObjects["fbo_1"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment, GL_TEXTURE_2D, GL_RGB16F_ARB);
+	m_framebufferObjects["fbo_2"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment, GL_TEXTURE_2D, GL_RGB16F_ARB);
 }
 
 /**
@@ -197,7 +196,6 @@ void GLWidget::paintGL()
    glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_2"]->texture());
    renderTexturedQuad(width, height);
    glBindTexture(GL_TEXTURE_2D, 0);
-
     paintText();
 }
 
@@ -205,8 +203,6 @@ void GLWidget::renderScene(int width, int height)
 {
 
 	//glEnable(GL_DEPTH_TEST);
-
-
 	//glEnable(GL_CULL_FACE);
 
     glEnable(GL_NORMALIZE);
@@ -216,9 +212,11 @@ void GLWidget::renderScene(int width, int height)
     //draw fire
     m_fire.updateParticles();
     m_fire.drawParticles();
+    m_rain.updateParticles();
+    m_rain.drawParticles();
     glPushMatrix();
     glTranslatef(0.0, 0.0, 15.0);
-    glScalef(10, 10, 10);
+   glScalef(10, 10, 10);
     objects.at(1).draw();
     glPopMatrix();
     glPushMatrix();
@@ -419,7 +417,7 @@ void GLWidget::applyPerspectiveCamera(float width, float height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(m_camera.fovy, ratio, 0.1f, 100000.f);
+    gluPerspective(m_camera.fovy, ratio, .01, 10000000.f);
     gluLookAt(eye.x, eye.y, eye.z, eye.x + dir.x, eye.y + dir.y, eye.z + dir.z,
               m_camera.up.x, m_camera.up.y, m_camera.up.z);
     glMatrixMode(GL_MODELVIEW);
