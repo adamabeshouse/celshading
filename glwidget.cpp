@@ -141,12 +141,12 @@ void GLWidget::paintGL()
     m_framebufferObjects["fbo_0"]->release();
 
     applyOrthogonalCamera(width,height);
-   // m_shaderPrograms["edge_detect"]->bind();
-   // m_shaderPrograms["edge_detect"]->setUniformValue("iwidth", float(this->width()));
-  //  m_shaderPrograms["edge_detect"]->setUniformValue("iheight", float(this->height()));
+    m_shaderPrograms["edge_detect"]->bind();
+    m_shaderPrograms["edge_detect"]->setUniformValue("iwidth", float(this->width()));
+    m_shaderPrograms["edge_detect"]->setUniformValue("iheight", float(this->height()));
     glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_0"]->texture());
     renderTexturedQuad(width, height);
-    //m_shaderPrograms["edge_detect"]->release();
+    m_shaderPrograms["edge_detect"]->release();
     glBindTexture(GL_TEXTURE_2D, 0);
 
     paintText();
