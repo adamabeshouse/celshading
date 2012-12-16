@@ -11,7 +11,7 @@ ParticleEmitter::ParticleEmitter(GLuint textureId, float3 color, float3 velocity
 {
 	m_velocity = float3(0,1,0);
 	m_fuzziness = 10;
-	m_scale = 2;
+	m_scale = 8;
 	m_textureID = textureId;
     m_particles = new Particle[maxParticles];
     resetParticles();
@@ -88,6 +88,8 @@ void ParticleEmitter::updateParticles()
    }
    if(m_particles[i].pos.y > 15) {
 	   m_particles[i].color -= (m_particles[i].color - float3(0.612,0.512,0.412))/10;
+   } else {
+	   m_particles[i].color -= (m_particles[i].color - float3(0.839, 0.361, 0.169) - float3(urand(0,0.2), urand(0,0.2), urand(0,0.2)));
    }
 
   }
@@ -110,40 +112,21 @@ void ParticleEmitter::drawParticles()
    float x = m_particles[i].pos.x;
    float y = m_particles[i].pos.y;
    float z = m_particles[i].pos.z;
-   glBegin(GL_TRIANGLES);
+
 
    //frontside
    glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
-  // m_sphere.drawTriangles();
-   /*glVertex3f(x,y,z);
-   glTexCoord2f(0,1);
-   glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
-   glVertex3f(x,y+m_scale,z);
-   glTexCoord2f(0,0);
-   glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
-   glVertex3f(x+m_scale,y+m_scale,z);
-   glTexCoord2f(1,0);
-   glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
-   glVertex3f(x+m_scale,y,z);
-   glTexCoord2f(1,1);
+   glPushMatrix();
+   float scalef = m_particles[i].life*m_scale;
+   glLoadIdentity();
 
-
-   //backside
-   glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
-   glVertex3f(x+m_scale,y,z);
-   glTexCoord2f(1,1);
-   glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
-   glVertex3f(x+m_scale,y+m_scale,z);
-   glTexCoord2f(1,0);
-   glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
-   glVertex3f(x,y+m_scale,z);
-   glTexCoord2f(0,0);
-   glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
-   glVertex3f(x,y,z);
-   glTexCoord2f(0,1);*/
-
-
+   glTranslatef(x,y,z);
+   glScalef(scalef, scalef, scalef);
+   glBegin(GL_TRIANGLES);
+   m_sphere.renderSelf(3,3);
    glEnd();
+   glPopMatrix();
+
   }
  }
 

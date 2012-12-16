@@ -27,6 +27,7 @@ public slots:
 
 protected:
     void initializeGL();
+    void renderScene(int width, int height);
     void paintGL();
     void resizeGL(int width, int height);
     void paintText();
