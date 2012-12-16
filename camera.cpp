@@ -16,12 +16,12 @@ void OrbitCamera::mouseMove(const Vector2 &delta)
     phi = max(0.01f - M_PI / 2, min(M_PI / 2 - 0.01f, phi));
 }
 
-void OrbitCamera::mouseWheel(float delta)
+void OrbitCamera::mouseWheel(float delta, Vector3 * target)
 {
-	float ndelta = delta/25.0;
-	Vector3 newCenter = center - Vector3::fromAngles(theta, phi) * ndelta;
+	float ndelta = delta/19.0;
+	Vector3 newCenter = *target - Vector3::fromAngles(theta, phi) * ndelta;
 	if(newCenter.dot(newCenter) < 70000) {
-		center += -Vector3::fromAngles(theta, phi)  * ndelta;
+		*target = newCenter;
 	}
 }
 
