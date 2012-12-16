@@ -63,6 +63,7 @@ private:
     QHash<QString, QGLFramebufferObject *> m_framebufferObjects; // hash map of all framebuffer objects
     QGLShaderProgram * newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader);
 	QGLShaderProgram * newFragShaderProgram(const QGLContext *context, QString fragShader);
+	void renderGround();
 	void createFramebufferObjects(int width, int height);
     void createShaderPrograms();
     OBJ m_obj;
@@ -78,7 +79,7 @@ private:
 	float m_treeRadius;
 	ParticleEmitter m_fire;
         Rain m_rain;
-	ParticleEmitter m_fire2;
+	GLuint groundTex;
 	QVector<float> m_treeAngles;
 	QVector<float> m_treeSizes;
 };

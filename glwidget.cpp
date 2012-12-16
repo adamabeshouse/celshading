@@ -229,6 +229,7 @@ void GLWidget::renderScene(int width, int height)
             objects.at(2).draw();
             glPopMatrix();
     }
+	renderGround();
    // glPopMatrix();
 
     paintText();
@@ -236,6 +237,22 @@ void GLWidget::renderScene(int width, int height)
 	//m_shaderPrograms["toon"]->release();            //unbind shader
 	//glDisable(GL_CULL_FACE);
    // glDisable(GL_DEPTH_TEST);
+}
+
+void GLWidget::renderGround() {
+	float extent = 10000;//this comes from the skybox
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0f,0.0f);
+	glVertex3f(-extent, 0, -extent);
+	glTexCoord2f(0.0f,1.0f);
+	glVertex3f(-extent, 0, extent);
+	glTexCoord2f(1.0f,1.0f);
+	glVertex3f(extent, 0, extent);
+	glTexCoord2f(1.0f,0.0f);
+	glVertex3f(extent, 0, -extent);
+	glEnd();
 }
 
 /**
