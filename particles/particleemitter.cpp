@@ -70,7 +70,7 @@ void ParticleEmitter::resetParticles()
   * calculations and maintain the life property of each particle.
   */
 float radius_function(float life) {
-	return 7.0/life;
+	return 20.0/(life+5);
 }
 
 void ParticleEmitter::updateParticles()
@@ -122,7 +122,7 @@ void ParticleEmitter::drawParticles()
    //frontside
    glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
    glPushMatrix();
-   float scalef = pow(m_particles[i].life,3)*m_scale;
+   float scalef = pow((14.0 - m_particles[i].pos.y)/14.0,3)*m_scale;
    glLoadIdentity();
 
    glTranslatef(x,y,z);

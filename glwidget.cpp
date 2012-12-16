@@ -26,7 +26,7 @@ GLWidget::GLWidget(QWidget *parent) :
     m_camera.fovy = 60.f;
     m_numObjs = 0;
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
-	m_numTrees = 25;
+	m_numTrees = 40;
 	m_treeRadius = 5.0;
 	for(unsigned int i = 0 ; i < m_numTrees; i++) {
 		m_treeAngles.append(2*(3.1415926)*float(rand() % 100)/100.0);
@@ -168,6 +168,8 @@ void GLWidget::paintGL()
    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
    glDisable(GL_TEXTURE_CUBE_MAP);
    m_shaderPrograms["toon"]->bind();
+   m_rain.updateParticles();
+   m_rain.drawParticles();
    renderScene(width, height);
    m_shaderPrograms["toon"]->release();
    m_framebufferObjects["fbo_0"]->release();
@@ -211,9 +213,7 @@ void GLWidget::renderScene(int width, int height)
    //bind shader
     //draw fire
     m_fire.updateParticles();
-    m_fire.drawParticles();
-    m_rain.updateParticles();
-    m_rain.drawParticles();
+	m_fire.drawParticles();
     glPushMatrix();
     glTranslatef(0.0, 0.0, 15.0);
    glScalef(10, 10, 10);
@@ -466,8 +466,7 @@ void GLWidget::createShaderPrograms()
 {
     const QGLContext *ctx = context();
     m_shaderPrograms["toon"] = newShaderProgram(ctx, "shaders/toon.vert", "shaders/toon.frag");
-    m_shaderPrograms["edge_detect"] = newFragShaderProgram(ctx, "shaders/edge_detect.frag");
-	m_shaderPrograms["edge_enhance"] = newFragShaderProgram(ctx, "shaders/edge_enhance.frag");
+	m_shaderPrograms["edge_detect"] = newFragShaderProgram(ctx, "shaders/edge_detect.frag");
 	m_shaderPrograms["combine"] = newFragShaderProgram(ctx, "shaders/combine.frag");
 }
 QGLShaderProgram * GLWidget::newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader)

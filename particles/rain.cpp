@@ -11,10 +11,10 @@ m_force(force)
 {
 m_velocity = float3(0,-5,0);
 m_fuzziness = 10;
-m_scale = 2;
+m_scale = 4;
 m_textureID = textureId;
-m_maxParticles = 200;
-m_particles = new Particle[200];
+m_maxParticles = 300;
+m_particles = new Particle[300];
 resetParticles();
 
 for (unsigned i = 0; i < m_maxParticles; ++i)
@@ -41,9 +41,9 @@ void Rain::resetParticle(unsigned i)
     m_particles[i].pos = float3(urand(-100, 100), urand(100,200), urand(-100, 100));
     m_particles[i].life = 1.0;
     m_particles[i].decay = urand(0.01, 0.15);
-    m_particles[i].color.r = .9;
-    m_particles[i].color.g = .93;
-    m_particles[i].color.b = 1;
+	m_particles[i].color.r = 0.1;
+	m_particles[i].color.g = 0.1;
+	m_particles[i].color.b = 0.44;
     m_particles[i].force.x = urand(-0.05, 0.05) + urand(-m_fuzziness*0.01f, m_fuzziness*0.01f);
     m_particles[i].force.y = -0.7;//m_force.y + urand(-m_fuzziness*0.1f, m_fuzziness*0.1f);
     m_particles[i].force.z = urand(-0.05,0.05) + urand(-m_fuzziness*0.01f, m_fuzziness*0.01f);
