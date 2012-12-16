@@ -47,11 +47,11 @@ void GLWidget::initializeGL()
 {
     // Enable depth testing, so that objects are occluded based on depth instead of drawing order
     glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_TEXTURE_2D);
+    glEnable(GL_TEXTURE_2D);
     // Enable back-face culling, meaning only the front side of every face is rendered
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-
+    glDisable(GL_DITHER);
     // Specify that the front face is represented by vertices in counterclockwise order (this is the default)
     glFrontFace(GL_CCW);
 
@@ -106,6 +106,7 @@ void GLWidget::createFramebufferObjects(int width, int height)
 {
 	// Allocate the main framebuffer object for rendering the scene to
         m_framebufferObjects["fbo_0"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::Depth,GL_TEXTURE_2D, GL_RGB16F_ARB);
+        m_framebufferObjects["fbo_0"]->format().setSamples(16);
 	//FBO for doing edge detect
         m_framebufferObjects["fbo_1"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment, GL_TEXTURE_2D, GL_RGB16F_ARB);
 }
@@ -115,9 +116,10 @@ void GLWidget::createFramebufferObjects(int width, int height)
     */
 void GLWidget::paintGL()
 {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     int width = this->width();
     int height = this->height();
-    applyPerspectiveCamera(width, height);
+
 
     //fps stuff
     int fpsTime = m_clock.elapsed();
@@ -126,57 +128,73 @@ void GLWidget::paintGL()
 
 
     // Clear the color and depth buffers to the current glClearColor
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
 
-    glEnable(GL_CULL_FACE);
+
+
+    m_framebufferObjects["fbo_0"]->bind();
+    applyPerspectiveCamera(width, height);
+    renderScene(width, height);
+    m_framebufferObjects["fbo_0"]->release();
+    m_framebufferObjects["fbo_0"]->blitFramebuffer(m_framebufferObjects["fbo_1"],
+                                                     QRect(0, 0, width, height), m_framebufferObjects["fbo_0"],
+                                                      QRect(0, 0, width, height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    applyOrthogonalCamera(width, height);
+    glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_1"]->texture());
+    renderTexturedQuad(width, height);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glActiveTexture(GL_TEXTURE0);
+    m_shaderPrograms["edge_detect"]->setUniformValue("tex", GL_TEXTURE0);
+    m_shaderPrograms["edge_detect"]->bind();
+    glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_1"]->texture());
+    renderTexturedQuad(width, height);
+    m_shaderPrograms["edge_detect"]->release();
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    paintText();
+}
+
+void GLWidget::renderScene(int width, int height)
+{
+
+    glEnable(GL_DEPTH_TEST);
+    glClear(GL_DEPTH_BUFFER_BIT);
     glEnable(GL_TEXTURE_CUBE_MAP);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
     glCallList(m_skybox);
-	glPushMatrix();
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
+   // glEnable(GL_CULL_FACE);
 
-	if (m_shouldRotate) m_camera.theta += .005; ;
-    if (m_useVbo){
-		//objects.at(0).vboDraw();
-		//m_obj.vboDraw();
-    }else{
-        glEnable(GL_NORMALIZE);
-        glMatrixMode(GL_MODELVIEW);
-		//m_framebufferObjects["fbo_0"]->bind();
-		m_shaderPrograms["toon"]->bind();               //bind shader
-		//draw fire
-		m_fire.updateParticles();
-		m_fire.drawParticles();
-		glPushMatrix();
-		glPopMatrix();
-        objects.at(0).draw();
-        glPushMatrix();
-        glTranslatef(0.0, 0.0, 15.0);
-        glScalef(10, 10, 10);
-        objects.at(1).draw();
-        glPopMatrix();
-        glPushMatrix();
-        glScalef(0.6,0.6,0.6);
-        for(unsigned int h=0;h<m_numTrees;h++) {
-                glPushMatrix();
-                glScalef(m_treeSizes[h], m_treeSizes[h], m_treeSizes[h]);
-				float rad = m_treeRadius + 10*cos(5*float(h)/m_numTrees) + 10;
-				glTranslatef(rad*cos(m_treeAngles[h]),0.0,rad*sin(m_treeAngles[h]));
-                objects.at(2).draw();
-                glPopMatrix();
-        }
-        glPopMatrix();
-        m_shaderPrograms["toon"]->release();            //unbind shader
-		m_framebufferObjects["fbo_0"]->release();
-
-
-
+    glEnable(GL_NORMALIZE);
+    glMatrixMode(GL_MODELVIEW);
+    m_shaderPrograms["toon"]->bind();               //bind shader
+   //bind shader
+    //draw fire
+    m_fire.updateParticles();
+    m_fire.drawParticles();
+    glPushMatrix();
+    glTranslatef(0.0, 0.0, 15.0);
+    glScalef(10, 10, 10);
+    objects.at(1).draw();
+    glPopMatrix();
+    glPushMatrix();
+    glScalef(0.6,0.6,0.6);
+    for(unsigned int h=0;h<m_numTrees;h++) {
+            glPushMatrix();
+            glScalef(m_treeSizes[h], m_treeSizes[h], m_treeSizes[h]);
+            glTranslatef(m_treeRadius*cos(m_treeAngles[h]),0.0,m_treeRadius*sin(m_treeAngles[h]));
+            objects.at(2).draw();
+            glPopMatrix();
     }
    // glPopMatrix();
 
     paintText();
+    glPopMatrix();
+    m_shaderPrograms["toon"]->release();            //unbind shader
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    glDisable(GL_TEXTURE_CUBE_MAP);
 }
 
 /**
