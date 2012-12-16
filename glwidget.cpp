@@ -151,7 +151,8 @@ void GLWidget::paintGL()
     }else{
         glEnable(GL_NORMALIZE);
         glMatrixMode(GL_MODELVIEW);
-        //m_framebufferObjects["fbo_0"]->bind();
+       // m_framebufferObjects["fbo_0"]->bind();
+        applyPerspectiveCamera(width, height);
         m_shaderPrograms["toon"]->bind();               //bind shader
         glPushMatrix();
         glTranslatef(0.0, 0.0, 15.0);
@@ -170,8 +171,13 @@ void GLWidget::paintGL()
         glPopMatrix();
         m_shaderPrograms["toon"]->release();            //unbind shader
         //m_framebufferObjects["fbo_0"]->release();
-
-
+        m_framebufferObjects["fbo_0"]->blitFramebuffer(m_framebufferObjects["fbo_1"],
+                                                       QRect(0, 0, width, height), m_framebufferObjects["fbo_0"],
+                                                       QRect(0, 0, width, height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        applyOrthogonalCamera(width, height);
+        glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_0"]->texture());
+        renderTexturedQuad(width, height);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
 
     }
