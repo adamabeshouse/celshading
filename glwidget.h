@@ -8,6 +8,7 @@
 #include "camera.h"
 #include "obj.h"
 #include "particles/particleemitter.h"
+#include "particles/rain.h"
 class QGLShaderProgram;
 class QGLFramebufferObject;
 
@@ -38,6 +39,7 @@ protected:
     void addObjects();
 	void renderTexturedQuad(int width, int height);
 	void applyOrthogonalCamera(float width, float height);
+	Vector3 m_cameraTarget;
 
 protected slots:
     void tick();
@@ -56,6 +58,7 @@ private:
     float m_increment;
     float m_prevTime;
 	void loadCubeMap();
+	void createSobelKernel(GLfloat* kernel, GLfloat* offsets);
     QHash<QString, QGLShaderProgram *> m_shaderPrograms; // hash map of all shader programs
     QHash<QString, QGLFramebufferObject *> m_framebufferObjects; // hash map of all framebuffer objects
     QGLShaderProgram * newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader);
@@ -74,6 +77,7 @@ private:
 	unsigned int m_numTrees;
 	float m_treeRadius;
 	ParticleEmitter m_fire;
+        Rain m_rain;
 	ParticleEmitter m_fire2;
 	QVector<float> m_treeAngles;
 	QVector<float> m_treeSizes;

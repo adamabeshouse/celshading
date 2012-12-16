@@ -25,7 +25,7 @@ struct OrbitCamera
     float zoom;
 
     void mouseMove(const Vector2 &delta);
-    void mouseWheel(float delta);
+	void mouseWheel(float delta, Vector3 * target);
     void lookAt(const Vector3 &point);
 };
 

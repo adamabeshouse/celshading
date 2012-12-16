@@ -7,6 +7,7 @@
 #include "QGLFramebufferObject"
 #include "resourceloader.h"
 #include "particles/particleemitter.h"
+#include "assert.h"
 
 using namespace std;
 
@@ -18,21 +19,22 @@ GLWidget::GLWidget(QWidget *parent) :
 {
     // Set up the camera
     m_camera.center = Vector3(0.f, 50.f, 0.f);
+    m_cameraTarget = m_camera.center;
     m_camera.up = Vector3(0.f, 1.f, 0.f);
     m_camera.zoom = 3.5f;
     m_camera.theta = M_PI * 1.5f, m_camera.phi = -0.2f;
     m_camera.fovy = 60.f;
     m_numObjs = 0;
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
-        this->createFramebufferObjects(this->width(), this->height());
 
-	m_numTrees = 1;
+
+	m_numTrees = 17;
 	m_treeRadius = 5.0;
 	for(unsigned int i = 0 ; i < m_numTrees; i++) {
 		m_treeAngles.append(2*(3.1415926)*float(rand() % 100)/100.0);
 		m_treeSizes.append(urand(0.9, 1.1)*40);
 	}
-    m_timer.start(1000.0f / MAX_FPS);
+	m_timer.start(1000.0f / MAX_FPS);
 }
 
 GLWidget::~GLWidget()
@@ -46,12 +48,12 @@ GLWidget::~GLWidget()
 void GLWidget::initializeGL()
 {
     // Enable depth testing, so that objects are occluded based on depth instead of drawing order
-    glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_2D);
     // Enable back-face culling, meaning only the front side of every face is rendered
-    glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glDisable(GL_DITHER);
+  //  glDisable(GL_DITHER);
     // Specify that the front face is represented by vertices in counterclockwise order (this is the default)
     glFrontFace(GL_CCW);
 
@@ -84,6 +86,7 @@ void GLWidget::initializeGL()
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specularMat);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &shiny);
 
+     this->createFramebufferObjects(this->width(), this->height());
     //set up shaders
     createShaderPrograms();
     // Set the screen color when the color buffer is cleared (in RGBA format)
@@ -106,9 +109,9 @@ void GLWidget::createFramebufferObjects(int width, int height)
 {
 	// Allocate the main framebuffer object for rendering the scene to
         m_framebufferObjects["fbo_0"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::Depth,GL_TEXTURE_2D, GL_RGB16F_ARB);
-        m_framebufferObjects["fbo_0"]->format().setSamples(16);
+        //m_framebufferObjects["fbo_0"]->format().setSamples(16);
 	//FBO for doing edge detect
-        m_framebufferObjects["fbo_1"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment, GL_TEXTURE_2D, GL_RGB16F_ARB);
+                m_framebufferObjects["fbo_1"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment, GL_TEXTURE_2D, GL_RGB16F_ARB);
 }
 
 /**
@@ -126,29 +129,24 @@ void GLWidget::paintGL()
     m_fps = 1000.f / (fpsTime - m_prevTime);
     m_prevTime = fpsTime;
 
+	m_camera.center -= (m_camera.center - m_cameraTarget)/3.0;
 
     // Clear the color and depth buffers to the current glClearColor
 
-
-
     m_framebufferObjects["fbo_0"]->bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     applyPerspectiveCamera(width, height);
     renderScene(width, height);
-    m_framebufferObjects["fbo_0"]->release();
-    m_framebufferObjects["fbo_0"]->blitFramebuffer(m_framebufferObjects["fbo_1"],
-                                                     QRect(0, 0, width, height), m_framebufferObjects["fbo_0"],
-                                                      QRect(0, 0, width, height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-    applyOrthogonalCamera(width, height);
-    glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_1"]->texture());
-    renderTexturedQuad(width, height);
-    glBindTexture(GL_TEXTURE_2D, 0);
 
-    glActiveTexture(GL_TEXTURE0);
-    m_shaderPrograms["edge_detect"]->setUniformValue("tex", GL_TEXTURE0);
-    m_shaderPrograms["edge_detect"]->bind();
-    glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_1"]->texture());
+    m_framebufferObjects["fbo_0"]->release();
+
+    applyOrthogonalCamera(width,height);
+   // m_shaderPrograms["edge_detect"]->bind();
+   // m_shaderPrograms["edge_detect"]->setUniformValue("iwidth", float(this->width()));
+  //  m_shaderPrograms["edge_detect"]->setUniformValue("iheight", float(this->height()));
+    glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_0"]->texture());
     renderTexturedQuad(width, height);
-    m_shaderPrograms["edge_detect"]->release();
+    //m_shaderPrograms["edge_detect"]->release();
     glBindTexture(GL_TEXTURE_2D, 0);
 
     paintText();
@@ -157,13 +155,14 @@ void GLWidget::paintGL()
 void GLWidget::renderScene(int width, int height)
 {
 
-    glEnable(GL_DEPTH_TEST);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_TEXTURE_CUBE_MAP);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
-    glCallList(m_skybox);
+	//glEnable(GL_DEPTH_TEST);
+        glClear(GL_DEPTH_BUFFER_BIT);
 
-   // glEnable(GL_CULL_FACE);
+        glEnable(GL_TEXTURE_CUBE_MAP);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
+        glCallList(m_skybox);
+
+	//glEnable(GL_CULL_FACE);
 
     glEnable(GL_NORMALIZE);
     glMatrixMode(GL_MODELVIEW);
@@ -172,9 +171,11 @@ void GLWidget::renderScene(int width, int height)
     //draw fire
     m_fire.updateParticles();
     m_fire.drawParticles();
+    m_rain.updateParticles();
+    m_rain.drawParticles();
     glPushMatrix();
     glTranslatef(0.0, 0.0, 15.0);
-    glScalef(10, 10, 10);
+   glScalef(10, 10, 10);
     objects.at(1).draw();
     glPopMatrix();
     glPushMatrix();
@@ -191,8 +192,8 @@ void GLWidget::renderScene(int width, int height)
     paintText();
     glPopMatrix();
     m_shaderPrograms["toon"]->release();            //unbind shader
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_CULL_FACE);
+   // glDisable(GL_DEPTH_TEST);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     glDisable(GL_TEXTURE_CUBE_MAP);
 }
@@ -292,12 +293,12 @@ void GLWidget::loadCubeMap()
 	fileList.append(new QFile("textures/negy.jpg"));///course/cs123/bin/textures/astra/negy.jpg"));
 	fileList.append(new QFile("textures/posz.jpg"));///course/cs123/bin/textures/astra/posz.jpg"));
 	fileList.append(new QFile("textures/negz.jpg"));///course/cs123/bin/textures/astra/negz.jpg"));*/
-	fileList.append(new QFile("textures/moon.jpg"));
-	fileList.append(new QFile("textures/stars.jpg"));
-	fileList.append(new QFile("textures/stars.jpg"));
-	fileList.append(new QFile("textures/stars.jpg"));
-	fileList.append(new QFile("textures/stars.jpg"));
-	fileList.append(new QFile("textures/stars.jpg"));
+	fileList.append(new QFile("textures/moon.jpg"));//posx
+	fileList.append(new QFile("textures/brush.jpg"));//negx
+	fileList.append(new QFile("textures/stars.jpg"));//posy
+	fileList.append(new QFile("textures/grass.jpg"));//negy
+	fileList.append(new QFile("textures/brush.jpg"));//posz
+	fileList.append(new QFile("textures/brush.jpg"));//negz
 	m_cubeMap = ResourceLoader::loadCubeMap(fileList);
 }
 
@@ -377,7 +378,7 @@ void GLWidget::applyPerspectiveCamera(float width, float height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(m_camera.fovy, ratio, 0.1f, 100000.f);
+    gluPerspective(m_camera.fovy, ratio, .01, 10000000.f);
     gluLookAt(eye.x, eye.y, eye.z, eye.x + dir.x, eye.y + dir.y, eye.z + dir.z,
               m_camera.up.x, m_camera.up.y, m_camera.up.z);
     glMatrixMode(GL_MODELVIEW);
@@ -418,7 +419,7 @@ void GLWidget::wheelEvent(QWheelEvent *event)
 {
     if (m_captureMouse && event->orientation() == Qt::Vertical)
     {
-        m_camera.mouseWheel(event->delta() );
+		m_camera.mouseWheel(event->delta(), &(this->m_cameraTarget));
     }
 }
 
