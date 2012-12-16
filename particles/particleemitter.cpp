@@ -11,7 +11,7 @@ ParticleEmitter::ParticleEmitter(GLuint textureId, float3 color, float3 velocity
 {
 	m_velocity = float3(0,1,0);
 	m_fuzziness = 10;
-	m_scale = 10;
+	m_scale = 5;
 	m_textureID = textureId;
     m_particles = new Particle[maxParticles];
     resetParticles();
@@ -43,9 +43,9 @@ void ParticleEmitter::resetParticle(unsigned i)
 	m_particles[i].color.r = m_color.x;
 	m_particles[i].color.g = m_color.y;
 	m_particles[i].color.b = m_color.z;
-	m_particles[i].force.x = urand(-0.2, 0.2) + urand(-m_fuzziness*0.01f, m_fuzziness*0.01f);
+	m_particles[i].force.x = urand(-0.05, 0.05) + urand(-m_fuzziness*0.01f, m_fuzziness*0.01f);
 	m_particles[i].force.y = 0.7;//m_force.y + urand(-m_fuzziness*0.1f, m_fuzziness*0.1f);
-	m_particles[i].force.z = urand(-0.2,0.2) + urand(-m_fuzziness*0.01f, m_fuzziness*0.01f);
+	m_particles[i].force.z = urand(-0.05,0.05) + urand(-m_fuzziness*0.01f, m_fuzziness*0.01f);
 	m_particles[i].dir.x = m_velocity.x + urand(-m_fuzziness, m_fuzziness);
 	m_particles[i].dir.y = m_velocity.y + urand(-m_fuzziness, m_fuzziness);
 	m_particles[i].dir.z = m_velocity.z + urand(-m_fuzziness, m_fuzziness);
@@ -69,6 +69,10 @@ void ParticleEmitter::resetParticles()
   * Performs one step of the particle simulation. Should perform all physics
   * calculations and maintain the life property of each particle.
   */
+float radius_function(float life) {
+	return 25*(exp(0.5/(life+3)) - 1);
+}
+
 void ParticleEmitter::updateParticles()
 {
  for(unsigned i = 0; i < m_maxParticles; ++i){
@@ -76,18 +80,19 @@ void ParticleEmitter::updateParticles()
    m_particles[i].active = true;
    this->resetParticle(i);
   } else {
-   m_particles[i].pos.x += m_particles[i].dir.x*m_speed;
-   m_particles[i].pos.y += m_particles[i].dir.y*m_speed;
-   m_particles[i].pos.z += m_particles[i].dir.z*m_speed;
-   m_particles[i].dir.x += m_particles[i].force.x;
+   m_particles[i].pos.x = radius_function(m_particles[i].pos.y)*cos(10*float(i)/m_maxParticles);//dir.x*m_speed;
+   m_particles[i].pos.y += m_velocity.y;///m_particles[i].dir.y*m_speed;
+   m_particles[i].pos.z = radius_function(m_particles[i].pos.y)*sin(10*float(i)/m_maxParticles);
+   //m_particles[i].pos.z = m_particles[i].dir.z*m_speed;
+   /*m_particles[i].dir.x += m_particles[i].force.x;
    m_particles[i].dir.y += m_particles[i].force.y;
-   m_particles[i].dir.z += m_particles[i].force.z;
+   m_particles[i].dir.z += m_particles[i].force.z;*/
    m_particles[i].life -= m_particles[i].decay;
-   if(m_particles[i].life <= 0) {
+   if(m_particles[i].life <= 0 || m_particles[i].pos.y > 14) {
     m_particles[i].active = false;
    }
    if(m_particles[i].pos.y > 11) {
-	   m_particles[i].color -= (m_particles[i].color - float3(0.512,0.512,0.412))/10;
+	   m_particles[i].color -= (m_particles[i].color - float3(0.912,0.912,0.412))/20;
    } else {
 	   m_particles[i].color -= (m_particles[i].color - float3(0.839, 0.461, 0.169) - float3(urand(0,0.2), urand(0,0.2), urand(0,0.2)));
    }
@@ -117,7 +122,7 @@ void ParticleEmitter::drawParticles()
    //frontside
    glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
    glPushMatrix();
-   float scalef = m_particles[i].life*m_scale;
+   float scalef = pow(m_particles[i].life,3)*m_scale;
    glLoadIdentity();
 
    glTranslatef(x,y,z);

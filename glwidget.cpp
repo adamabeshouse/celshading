@@ -26,7 +26,7 @@ GLWidget::GLWidget(QWidget *parent) :
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
         this->createFramebufferObjects(this->width(), this->height());
 
-	m_numTrees = 80;
+	m_numTrees = 1;
 	m_treeRadius = 5.0;
 	for(unsigned int i = 0 ; i < m_numTrees; i++) {
 		m_treeAngles.append(2*(3.1415926)*float(rand() % 100)/100.0);
@@ -47,7 +47,7 @@ void GLWidget::initializeGL()
 {
     // Enable depth testing, so that objects are occluded based on depth instead of drawing order
     glEnable(GL_DEPTH_TEST);
-
+	//glEnable(GL_TEXTURE_2D);
     // Enable back-face culling, meaning only the front side of every face is rendered
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -133,7 +133,7 @@ void GLWidget::paintGL()
     glEnable(GL_TEXTURE_CUBE_MAP);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
     glCallList(m_skybox);
-    glPushMatrix();
+	glPushMatrix();
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 
@@ -169,13 +169,12 @@ void GLWidget::paintGL()
         }
         glPopMatrix();
         m_shaderPrograms["toon"]->release();            //unbind shader
-        //m_framebufferObjects["fbo_0"]->release();
-
+		m_framebufferObjects["fbo_0"]->release();
 
 
 
     }
-    glPopMatrix();
+   // glPopMatrix();
 
     paintText();
 }
