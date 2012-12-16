@@ -1,0 +1,117 @@
+<scenefile>
+ <globaldata>
+  <ambientcoeff v="1"/>
+  <diffusecoeff v="0.75"/>
+  <specularcoeff v="1"/>
+ </globaldata>
+ <cameradata>
+  <pos x="1.07154" y="1.43842" z="1.80747"/>
+  <look x="-0.882847" y="0.121664" z="-0.453629"/>
+  <up x="0" y="1" z="0"/>
+  <heightangle v="55"/>
+ </cameradata>
+ <lightdata>
+  <id v="0"/>
+  <position x="100" y="200" z="300"/>
+  <color x="1" y="1" z="1"/>
+  <function a="1" b="0" c="0"/>
+ </lightdata>
+ <object type="tree" name="root">
+  <transblock>
+   <matrix>
+    <row a="1" b="0" c="0" d="-1.39974"/>
+    <row a="0" b="1" c="0" d="1.98266"/>
+    <row a="0" b="0" c="1" d="0.088741"/>
+    <row a="0" b="0" c="0" d="1"/>
+   </matrix>
+   <object type="primitive" name="sphere">
+    <ambient x="0.25" y="0.25" z="0.25"/>
+    <diffuse x="0.5" y="0.5" z="0.5"/>
+   </object>
+  </transblock>
+  <transblock>
+   <matrix>
+    <row a="1" b="0" c="0" d="-0.983544"/>
+    <row a="0" b="1" c="0" d="2.15702"/>
+    <row a="0" b="0" c="1" d="0.217577"/>
+    <row a="0" b="0" c="0" d="1"/>
+   </matrix>
+   <object type="primitive" name="sphere">
+    <ambient x="0.25" y="0.25" z="0.25"/>
+    <diffuse x="0.5" y="0.5" z="0.5"/>
+   </object>
+  </transblock>
+  <transblock>
+   <matrix>
+    <row a="1" b="0" c="0" d="-1.06577"/>
+    <row a="0" b="1" c="0" d="1.75307"/>
+    <row a="0" b="0" c="1" d="0.0818881"/>
+    <row a="0" b="0" c="0" d="1"/>
+   </matrix>
+   <object type="primitive" name="sphere">
+    <ambient x="0.25" y="0.25" z="0.25"/>
+    <diffuse x="0.5" y="0.5" z="0.5"/>
+   </object>
+  </transblock>
+  <transblock>
+   <matrix>
+    <row a="1" b="0" c="0" d="-0.694344"/>
+    <row a="0" b="1" c="0" d="1.89817"/>
+    <row a="0" b="0" c="1" d="-0.109025"/>
+    <row a="0" b="0" c="0" d="1"/>
+   </matrix>
+   <object type="primitive" name="sphere">
+    <ambient x="0.25" y="0.25" z="0.25"/>
+    <diffuse x="0.5" y="0.5" z="0.5"/>
+   </object>
+  </transblock>
+  <transblock>
+   <matrix>
+    <row a="1" b="0" c="0" d="-1.26315"/>
+    <row a="0" b="1" c="0" d="2.16669"/>
+    <row a="0" b="0" c="1" d="-0.0624155"/>
+    <row a="0" b="0" c="0" d="1"/>
+   </matrix>
+   <object type="primitive" name="sphere">
+    <ambient x="0.25" y="0.25" z="0.25"/>
+    <diffuse x="0.5" y="0.5" z="0.5"/>
+   </object>
+  </transblock>
+  <transblock>
+   <matrix>
+    <row a="1" b="0" c="0" d="-0.860793"/>
+    <row a="0" b="1" c="0" d="1.97597"/>
+    <row a="0" b="0" c="1" d="-0.534107"/>
+    <row a="0" b="0" c="0" d="1"/>
+   </matrix>
+   <object type="primitive" name="sphere">
+    <ambient x="0.25" y="0.25" z="0.25"/>
+    <diffuse x="0.5" y="0.5" z="0.5"/>
+   </object>
+  </transblock>
+  <transblock>
+   <matrix>
+    <row a="1" b="0" c="0" d="-0.855903"/>
+    <row a="0" b="1" c="0" d="2.24859"/>
+    <row a="0" b="0" c="1" d="-0.306461"/>
+    <row a="0" b="0" c="0" d="1"/>
+   </matrix>
+   <object type="primitive" name="sphere">
+    <ambient x="0.25" y="0.25" z="0.25"/>
+    <diffuse x="0.5" y="0.5" z="0.5"/>
+   </object>
+  </transblock>
+  <transblock>
+   <matrix>
+    <row a="1" b="0" c="0" d="-0.697743"/>
+    <row a="0" b="1" c="0" d="1.79253"/>
+    <row a="0" b="0" c="1" d="-0.356675"/>
+    <row a="0" b="0" c="0" d="1"/>
+   </matrix>
+   <object type="primitive" name="sphere">
+    <ambient x="0.25" y="0.25" z="0.25"/>
+    <diffuse x="0.5" y="0.5" z="0.5"/>
+   </object>
+  </transblock>
+ </object>
+</scenefile>

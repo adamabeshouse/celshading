@@ -1,6 +1,7 @@
 #include "camera.h"
 #include <qgl.h>
 #include <iostream>
+#include "stdio.h"
 
 using namespace std;
 
@@ -17,7 +18,11 @@ void OrbitCamera::mouseMove(const Vector2 &delta)
 
 void OrbitCamera::mouseWheel(float delta)
 {
-    center += -Vector3::fromAngles(theta, phi)  * delta;
+	float ndelta = delta/25.0;
+	Vector3 newCenter = center - Vector3::fromAngles(theta, phi) * ndelta;
+	if(newCenter.dot(newCenter) < 70000) {
+		center += -Vector3::fromAngles(theta, phi)  * ndelta;
+	}
 }
 
 void OrbitCamera::lookAt(const Vector3 &point)

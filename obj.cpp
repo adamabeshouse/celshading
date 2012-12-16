@@ -20,11 +20,9 @@ extern "C" {
 
 bool OBJ::read(const QString &path)
 {
-	//m_toonShader = ResourceLoader::newFragShaderProgram(context(), "cartoon.frag");
     // Open the file
     QString obj = QString(path);
 
-    //QString obj = QString("/home/zsalmon/course/cs123/final/celshading/models/hj_media_studios_-_lego_minifigure.obj");
     QFile file(obj);
     if (!file.open(QFile::ReadOnly | QFile::Text)) return false;
     QTextStream f(&file);
@@ -50,15 +48,12 @@ bool OBJ::read(const QString &path)
             float y = parts[2].toFloat();
             float z = parts[3].toFloat();
             currKA = Vector3(x,y,z);
-        } else if(parts[0] == "kd" && parts.count() >= 4) {
-           // printf("called\n");
+		} else if(parts[0] == "kd" && parts.count() >= 4) {
             float x = parts[1].toFloat();
             float y = parts[2].toFloat();
-            float z = parts[3].toFloat();
-            printf("vector3 x %f y %f z %f\n", x ,y, z);
+			float z = parts[3].toFloat();
             currKD = Vector3(x,y,z);
-        } else if (parts[0] == "v" && parts.count() >= 4) {
-           // printf("vertexes added\n");
+		} else if (parts[0] == "v" && parts.count() >= 4) {
             float x = parts[1].toFloat();
             float y = parts[2].toFloat();
             float z = parts[3].toFloat();
@@ -126,21 +121,15 @@ void OBJ::draw() const
     for(int i = 0; i<size; i++){
         Triangle tri = triangles.at(i);
 		glBegin(GL_TRIANGLES);
-		//Vector3 normal = this->generateNormal(vertices.at(tri.a.vertex), vertices.at(tri.b.vertex), vertices.at(tri.c.vertex));
         glColor3f(vertices.at(tri.a.vertex).kd.x, vertices.at(tri.a.vertex).kd.y, vertices.at(tri.a.vertex).kd.z);
 		glNormal3f(vertexNormals[tri.a.vertex].x, vertexNormals[tri.a.vertex].y, vertexNormals[tri.a.vertex].z);
-       // glNormal3f(normals.at(tri.a.normal).x, normals.at(tri.a.normal).y, normals.at(tri.a.normal).z);
-       // printf("normal is %d", tri.a.normal);
-        glVertex3f(50*vertices.at(tri.a.vertex).coord.x, 50*vertices.at(tri.a.vertex).coord.y, 50*vertices.at(tri.a.vertex).coord.z);
+		glVertex3f(vertices.at(tri.a.vertex).coord.x, vertices.at(tri.a.vertex).coord.y, vertices.at(tri.a.vertex).coord.z);
 		glColor3f(vertices.at(tri.b.vertex).kd.x, vertices.at(tri.b.vertex).kd.y, vertices.at(tri.b.vertex).kd.z);
 		glNormal3f(vertexNormals[tri.b.vertex].x, vertexNormals[tri.b.vertex].y, vertexNormals[tri.b.vertex].z);
-        //glNormal3f(normals.at(tri.b.normal).x, normals.at(tri.b.normal).y, normals.at(tri.b.normal).z);
-        glVertex3f(50*vertices.at(tri.b.vertex).coord.x, 50*vertices.at(tri.b.vertex).coord.y, 50*vertices.at(tri.b.vertex).coord.z);
+		glVertex3f(vertices.at(tri.b.vertex).coord.x, vertices.at(tri.b.vertex).coord.y, vertices.at(tri.b.vertex).coord.z);
 		glColor3f(vertices.at(tri.c.vertex).kd.x, vertices.at(tri.c.vertex).kd.y, vertices.at(tri.c.vertex).kd.z);
 		glNormal3f(vertexNormals[tri.c.vertex].x, vertexNormals[tri.c.vertex].y, vertexNormals[tri.c.vertex].z);
-       // glNormal3f(normals.at(tri.c.normal).x, normals.at(tri.c.normal).y, normals.at(tri.c.normal).z);
-        glVertex3f(50*vertices.at(tri.c.vertex).coord.x, 50*vertices.at(tri.c.vertex).coord.y, 50*vertices.at(tri.c.vertex).coord.z);
-
+		glVertex3f(vertices.at(tri.c.vertex).coord.x, vertices.at(tri.c.vertex).coord.y, vertices.at(tri.c.vertex).coord.z);
     }
 	//m_toonShader->release();
     glEnd();
@@ -158,7 +147,7 @@ void OBJ::initVbo(){
      * so you can rightly expect that the triangles, vertices
      * and normals lists are completely filled in.
      */
-    /*int buffersize = triangles.size()*3*2*3;
+	/*int buffersize = triangles.size()*3*2*3;
 
     glGenBuffers(1, &m_vboBinding);
     glBindBuffer(GL_ARRAY_BUFFER, m_vboBinding);
@@ -167,42 +156,42 @@ void OBJ::initVbo(){
         int index = i*18;
         Triangle tri = triangles.at(i);
 
-        data[index]=vertices.at(tri.a.vertex).x;
-        data[index+1]=vertices.at(tri.a.vertex).y;
-        data[index+2]=vertices.at(tri.a.vertex).z;
+		data[index]=vertices.at(tri.a.vertex).coord.x;
+		data[index+1]=vertices.at(tri.a.vertex).coord.y;
+		data[index+2]=vertices.at(tri.a.vertex).coord.z;
 
-        data[index+3]=normals.at(tri.a.normal).x;
-        data[index+4]=normals.at(tri.a.normal).y;
-        data[index+5]=normals.at(tri.a.normal).z;
+		data[index+3]=vertexNormals.at(tri.a.vertex).x;
+		data[index+4]=vertexNormals.at(tri.a.vertex).y;
+		data[index+5]=vertexNormals.at(tri.a.vertex).z;
 
 
 
 		//printf("red is %f\n", vertices.at(tri.a.vertex).kd.x);
-        data[index+6]=vertices.at(tri.b.vertex).x;
-        data[index+7]=vertices.at(tri.b.vertex).y;
-        data[index+8]=vertices.at(tri.b.vertex).z;
+		data[index+6]=vertices.at(tri.b.vertex).coord.x;
+		data[index+7]=vertices.at(tri.b.vertex).coord.y;
+		data[index+8]=vertices.at(tri.b.vertex).coord.z;
 
-        data[index+9]=normals.at(tri.b.normal).x;
-        data[index+10]=normals.at(tri.b.normal).y;
-        data[index+11]=normals.at(tri.b.normal).z;
-
-
-
-        data[index+12]= vertices.at(tri.c.vertex).x;
-        data[index+13]=vertices.at(tri.c.vertex).y;
-        data[index+14]=vertices.at(tri.c.vertex).z;
-
-        data[index+15]=normals.at(tri.c.normal).x;
-        data[index+16]=normals.at(tri.c.normal).y;
-        data[index+17]=normals.at(tri.c.normal).z;
+		data[index+9]=vertexNormals.at(tri.b.vertex).x;
+		data[index+10]=vertexNormals.at(tri.b.vertex).y;
+		data[index+11]=vertexNormals.at(tri.b.vertex).z;
 
 
-    }
+
+		data[index+12]= vertices.at(tri.c.vertex).coord.x;
+		data[index+13]=vertices.at(tri.c.vertex).coord.y;
+		data[index+14]=vertices.at(tri.c.vertex).coord.z;
+
+		data[index+15]=vertexNormals.at(tri.c.vertex).x;
+		data[index+16]=vertexNormals.at(tri.c.vertex).y;
+		data[index+17]=vertexNormals.at(tri.c.vertex).z;
+
+
+	}
     unsigned int dataSize = buffersize*(sizeof(float));
     glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    delete[] data;*/
+	delete[] data;*/
 }
 
 void OBJ::vboDraw() const
@@ -215,13 +204,14 @@ void OBJ::vboDraw() const
      * using the vbo.
      *
      */
-    /*
-    glBindBuffer(GL_ARRAY_BUFFER, m_vboBinding);
-	(GL_VERTEX_ARRAY);
+
+   /* glBindBuffer(GL_ARRAY_BUFFER, m_vboBinding);
+	glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
     glVertexPointer(3, GL_FLOAT, 6*(sizeof(float)), (void*) 0);
     glNormalPointer(GL_FLOAT, 6*(sizeof(float)), (void*) (3*sizeof(float)));
-    glDrawArrays(GL_TRIANGLES,0 ,triangles.size()*3*2*3);*/
+	glDrawArrays(GL_TRIANGLES,0 ,triangles.size()*3*2*3);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);*/
 }
 
 Vector3 OBJ::generateNormal(Vertex v1, Vertex v2, Vertex v3) const {

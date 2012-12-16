@@ -16,14 +16,29 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     glwidget.cpp \
     obj.cpp \
-    camera.cpp
+    camera.cpp \
+    resourceloader.cpp \
+    glm.cpp \
+    lib/targa.cpp \
+    particles/particleemitter.cpp \
+    ShapesSphere.cpp \
+    Shape.cpp \
+    Vertex3f.cpp
 
 HEADERS  += mainwindow.h \
     glwidget.h \
     vector.h \
     camera.h \
     obj.h \
-    scene.h
+    scene.h \
+    resourceloader.h \
+    glm.h \
+    lib/targa.h \
+    particles/particleemitter.h \
+    common.h \
+    ShapesSphere.h \
+    Shape.h \
+    Vertex3f.h
 
 FORMS    += mainwindow.ui
 

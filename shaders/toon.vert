@@ -1,6 +1,6 @@
 varying float lightIntensity;
 varying vec4 color;
-const vec3 lightDirection = vec3(1, -1, .3);
+const vec3 lightDirection = vec3(-1, -1, 0);
 void main(void) {
     gl_Position = ftransform();
     vec3 D = normalize(lightDirection);

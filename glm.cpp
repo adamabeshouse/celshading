@@ -26,7 +26,7 @@
 #include <GL/glu.h>
 #include <GL/glext.h>
 #include "glm.h"
-#include "targa.h"
+#include "lib/targa.h"
 
 
 #ifndef GL_BGR

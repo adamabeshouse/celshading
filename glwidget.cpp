@@ -5,6 +5,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include "QGLFramebufferObject"
+#include "resourceloader.h"
+#include "particles/particleemitter.h"
 
 using namespace std;
 
@@ -12,7 +14,7 @@ static const int MAX_FPS = 120;
 
 GLWidget::GLWidget(QWidget *parent) :
     QGLWidget(parent), m_timer(this), m_fps(0.0f), m_prevFps(0.0f), m_increment(0), m_font("Deja Vu Sans Mono", 8, 4),
-    m_defaultModel("/course/cs123/data/mesh/sponzaLab.obj"), m_captureMouse(true), m_shouldRotate(true), m_useVbo(false)
+	m_defaultModel("/course/cs123/data/mesh/sponzaLab.obj"), m_captureMouse(true), m_shouldRotate(false), m_useVbo(false)
 {
     // Set up the camera
     m_camera.center = Vector3(0.f, 50.f, 0.f);
@@ -24,6 +26,12 @@ GLWidget::GLWidget(QWidget *parent) :
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
 	this->createFramebufferObjects(this->width(), this->height());
 
+	m_numTrees = 8;
+	m_treeRadius = 150.0;
+	for(unsigned int i = 0 ; i < m_numTrees; i++) {
+		m_treeAngles.append(2*(3.1415926)*float(rand() % 100)/100.0);
+		m_treeSizes.append(urand(0.5, 1.5));
+	}
     m_timer.start(1000.0f / MAX_FPS);
 }
 
@@ -117,16 +125,31 @@ void GLWidget::paintGL()
     m_fps = 1000.f / (fpsTime - m_prevTime);
     m_prevTime = fpsTime;
 
+
     // Clear the color and depth buffers to the current glClearColor
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+
+  //  glEnable(GL_CULL_FACE);
     //glColor3f(.5,.5,1);
+	glEnable(GL_TEXTURE_CUBE_MAP);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
+	glCallList(m_skybox);
     glPushMatrix();
-    if (m_shouldRotate) m_camera.theta += .005; ;
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+	//draw fire
+	m_fire.updateParticles();
+	m_fire.drawParticles();
+	glPushMatrix();
+	glRotatef(90, 0,1,0);
+	m_fire2.updateParticles();
+	m_fire2.drawParticles();
+	glPopMatrix();
+	if (m_shouldRotate) m_camera.theta += .005; ;
     if (m_useVbo){
-        objects.at(0).vboDraw();
-        //m_obj.vboDraw();
+		//objects.at(0).vboDraw();
+		//m_obj.vboDraw();
     }else{
 ;
         glEnable(GL_NORMALIZE);
@@ -136,8 +159,18 @@ void GLWidget::paintGL()
         objects.at(0).draw();
         glPushMatrix();
         glTranslatef(0.0, 0.0, 15.0);
-        glScalef(.2, .2, .2);
+		glScalef(10, 10, 10);
         objects.at(1).draw();
+		glPopMatrix();
+		glPushMatrix();
+		glScalef(0.6,0.6,0.6);
+		for(unsigned int h=0;h<m_numTrees;h++) {
+			glPushMatrix();
+			glScalef(m_treeSizes[h], m_treeSizes[h], m_treeSizes[h]);
+			glTranslatef(m_treeRadius*cos(m_treeAngles[h]),0.0,m_treeRadius*sin(m_treeAngles[h]));
+			objects.at(2).draw();
+			glPopMatrix();
+		}
 		glPopMatrix();
 		m_shaderPrograms["toon"]->release();            //unbind shader
 		//m_framebufferObjects["fbo_0"]->release();
@@ -217,7 +250,7 @@ void GLWidget::resizeGL(int width, int height)
 	}
 }
 
-void GLWidget::addObjects(){
+void GLWidget::addObjects() {
     OBJ dragon;
 	if (! dragon.read("models/dragon.obj")){
         std::cout << "it didnt load! call a ta over" << endl;
@@ -230,9 +263,41 @@ void GLWidget::addObjects(){
         exit(1);
 
     }
+	OBJ tree1;
+	if (! tree1.read("models/tree1.obj")){
+		std::cout << "it didnt load! call a ta over" << endl;
+		exit(1);
+
+	}
     objects.append(dragon);
     objects.append(lego);
+	objects.append(tree1);
+
+	m_skybox = ResourceLoader::loadSkybox();
+	loadCubeMap();
+
    // m_obj=dragon;
+}
+
+/**
+  Load a cube map for the skybox
+ **/
+void GLWidget::loadCubeMap()
+{
+	QList<QFile *> fileList;
+	/*fileList.append(new QFile("textures/posx.jpg"));//course/cs123/bin/textures/astra/posx.jpg"));
+	fileList.append(new QFile("textures/negx.jpg"));//course/cs123/bin/textures/astra/negx.jpg"));
+	fileList.append(new QFile("textures/posy.jpg"));//course/cs123/bin/textures/astra/posy.jpg"));
+	fileList.append(new QFile("textures/negy.jpg"));///course/cs123/bin/textures/astra/negy.jpg"));
+	fileList.append(new QFile("textures/posz.jpg"));///course/cs123/bin/textures/astra/posz.jpg"));
+	fileList.append(new QFile("textures/negz.jpg"));///course/cs123/bin/textures/astra/negz.jpg"));*/
+	fileList.append(new QFile("textures/moon.jpg"));
+	fileList.append(new QFile("textures/stars.jpg"));
+	fileList.append(new QFile("textures/stars.jpg"));
+	fileList.append(new QFile("textures/stars.jpg"));
+	fileList.append(new QFile("textures/stars.jpg"));
+	fileList.append(new QFile("textures/stars.jpg"));
+	m_cubeMap = ResourceLoader::loadCubeMap(fileList);
 }
 
 /**
