@@ -138,14 +138,7 @@ void GLWidget::paintGL()
     glPushMatrix();
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-	//draw fire
-	m_fire.updateParticles();
-	m_fire.drawParticles();
-	glPushMatrix();
-	glRotatef(90, 0,1,0);
-	m_fire2.updateParticles();
-	m_fire2.drawParticles();
-	glPopMatrix();
+
 	if (m_shouldRotate) m_camera.theta += .005; ;
     if (m_useVbo){
 		//objects.at(0).vboDraw();
@@ -156,6 +149,14 @@ void GLWidget::paintGL()
       //  glMatrixMode(GL_MODELVIEW);
 		//m_framebufferObjects["fbo_0"]->bind();
 		m_shaderPrograms["toon"]->bind();               //bind shader
+		//draw fire
+		m_fire.updateParticles();
+		m_fire.drawParticles();
+		glPushMatrix();
+		//glRotatef(90, 0,1,0);
+		//m_fire2.updateParticles();
+		//m_fire2.drawParticles();
+		glPopMatrix();
         objects.at(0).draw();
         glPushMatrix();
         glTranslatef(0.0, 0.0, 15.0);
@@ -164,13 +165,13 @@ void GLWidget::paintGL()
 		glPopMatrix();
 		glPushMatrix();
 		glScalef(0.6,0.6,0.6);
-		for(unsigned int h=0;h<m_numTrees;h++) {
+		/*for(unsigned int h=0;h<m_numTrees;h++) {
 			glPushMatrix();
 			glScalef(m_treeSizes[h], m_treeSizes[h], m_treeSizes[h]);
 			glTranslatef(m_treeRadius*cos(m_treeAngles[h]),0.0,m_treeRadius*sin(m_treeAngles[h]));
 			objects.at(2).draw();
 			glPopMatrix();
-		}
+		}*/
 		glPopMatrix();
 		m_shaderPrograms["toon"]->release();            //unbind shader
 		//m_framebufferObjects["fbo_0"]->release();
