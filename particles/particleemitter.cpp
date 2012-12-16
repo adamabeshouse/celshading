@@ -11,7 +11,7 @@ ParticleEmitter::ParticleEmitter(GLuint textureId, float3 color, float3 velocity
 {
 	m_velocity = float3(0,1,0);
 	m_fuzziness = 10;
-	m_scale = 8;
+	m_scale = 10;
 	m_textureID = textureId;
     m_particles = new Particle[maxParticles];
     resetParticles();
@@ -43,9 +43,9 @@ void ParticleEmitter::resetParticle(unsigned i)
 	m_particles[i].color.r = m_color.x;
 	m_particles[i].color.g = m_color.y;
 	m_particles[i].color.b = m_color.z;
-	m_particles[i].force.x = urand(-m_fuzziness*0.01f, m_fuzziness*0.01f);
-	m_particles[i].force.y = 1;//m_force.y + urand(-m_fuzziness*0.1f, m_fuzziness*0.1f);
-	m_particles[i].force.z = urand(-m_fuzziness*0.01f, m_fuzziness*0.01f);
+	m_particles[i].force.x = urand(-0.2, 0.2) + urand(-m_fuzziness*0.01f, m_fuzziness*0.01f);
+	m_particles[i].force.y = 0.7;//m_force.y + urand(-m_fuzziness*0.1f, m_fuzziness*0.1f);
+	m_particles[i].force.z = urand(-0.2,0.2) + urand(-m_fuzziness*0.01f, m_fuzziness*0.01f);
 	m_particles[i].dir.x = m_velocity.x + urand(-m_fuzziness, m_fuzziness);
 	m_particles[i].dir.y = m_velocity.y + urand(-m_fuzziness, m_fuzziness);
 	m_particles[i].dir.z = m_velocity.z + urand(-m_fuzziness, m_fuzziness);
@@ -86,10 +86,10 @@ void ParticleEmitter::updateParticles()
    if(m_particles[i].life <= 0) {
     m_particles[i].active = false;
    }
-   if(m_particles[i].pos.y > 15) {
-	   m_particles[i].color -= (m_particles[i].color - float3(0.612,0.512,0.412))/10;
+   if(m_particles[i].pos.y > 11) {
+	   m_particles[i].color -= (m_particles[i].color - float3(0.512,0.512,0.412))/10;
    } else {
-	   m_particles[i].color -= (m_particles[i].color - float3(0.839, 0.361, 0.169) - float3(urand(0,0.2), urand(0,0.2), urand(0,0.2)));
+	   m_particles[i].color -= (m_particles[i].color - float3(0.839, 0.461, 0.169) - float3(urand(0,0.2), urand(0,0.2), urand(0,0.2)));
    }
 
   }
@@ -123,7 +123,7 @@ void ParticleEmitter::drawParticles()
    glTranslatef(x,y,z);
    glScalef(scalef, scalef, scalef);
    glBegin(GL_TRIANGLES);
-   m_sphere.renderSelf(3,3);
+   m_sphere.renderSelf(4,4);
    glEnd();
    glPopMatrix();
 

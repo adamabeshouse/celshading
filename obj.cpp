@@ -260,6 +260,9 @@ OBJ::Index OBJ::getIndex(const QString &str) const
 {
     QStringList parts = str.split('/');
     int vertex = parts.count() > 0 ? relativeIndex(parts[0].toInt(), vertices.count()) : -1;
-    int normal = parts.count() > 2 ? relativeIndex(parts[2].toInt(), normals.count()) : -1;
+	if(parts.count() == 0) {
+		printf("%s\n", str.toStdString().c_str());
+	}
+	int normal = parts.count() > 2 ? relativeIndex(parts[2].toInt(), normals.count()) : -1;
     return Index(vertex,normal);
 }

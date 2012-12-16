@@ -26,11 +26,11 @@ GLWidget::GLWidget(QWidget *parent) :
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
         this->createFramebufferObjects(this->width(), this->height());
 
-	m_numTrees = 8;
-	m_treeRadius = 150.0;
+	m_numTrees = 80;
+	m_treeRadius = 5.0;
 	for(unsigned int i = 0 ; i < m_numTrees; i++) {
 		m_treeAngles.append(2*(3.1415926)*float(rand() % 100)/100.0);
-		m_treeSizes.append(urand(0.5, 1.5));
+		m_treeSizes.append(urand(0.9, 1.1)*40);
 	}
     m_timer.start(1000.0f / MAX_FPS);
 }
@@ -150,9 +150,6 @@ void GLWidget::paintGL()
 		m_fire.updateParticles();
 		m_fire.drawParticles();
 		glPushMatrix();
-		//glRotatef(90, 0,1,0);
-		//m_fire2.updateParticles();
-		//m_fire2.drawParticles();
 		glPopMatrix();
         objects.at(0).draw();
         glPushMatrix();
@@ -165,7 +162,8 @@ void GLWidget::paintGL()
         for(unsigned int h=0;h<m_numTrees;h++) {
                 glPushMatrix();
                 glScalef(m_treeSizes[h], m_treeSizes[h], m_treeSizes[h]);
-                glTranslatef(m_treeRadius*cos(m_treeAngles[h]),0.0,m_treeRadius*sin(m_treeAngles[h]));
+				float rad = m_treeRadius + 10*cos(5*float(h)/m_numTrees) + 10;
+				glTranslatef(rad*cos(m_treeAngles[h]),0.0,rad*sin(m_treeAngles[h]));
                 objects.at(2).draw();
                 glPopMatrix();
         }
@@ -250,7 +248,7 @@ void GLWidget::addObjects() {
 
     }
 	OBJ tree1;
-	if (! tree1.read("models/tree1.obj")){
+	if (! tree1.read("models/simpletree.obj")){
 		std::cout << "it didnt load! call a ta over" << endl;
 		exit(1);
 
