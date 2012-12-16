@@ -70,7 +70,7 @@ void ParticleEmitter::resetParticles()
   * calculations and maintain the life property of each particle.
   */
 float radius_function(float life) {
-	return 25*(exp(0.5/(life+3)) - 1);
+	return 7.0/life;
 }
 
 void ParticleEmitter::updateParticles()

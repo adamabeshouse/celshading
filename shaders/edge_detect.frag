@@ -16,12 +16,13 @@ void main(void) {
 		float gy = -1.0*A00 - 2.0*A10 - A20 + A02 + 2.0*A12 + A22;
 		float d = sqrt(gx*gx + gy*gy);
 
-		float threshold = 0.9;
-		vec4 edge = vec4(d,d,d,0);
+		float threshold = 0.5;
+		d = min(1.0, d);
+		vec4 edge = vec4(1.0,1.0,1.0,0);
 		if(d < threshold) {
 			edge = vec4(0,0,0,0);
 		}
-		gl_FragColor = texture2D(tex, gl_TexCoord[0].st) + edge;
+		gl_FragColor = edge;//texture2D(tex, gl_TexCoord[0].st) + edge;
 }
 
 

@@ -25,9 +25,9 @@ GLWidget::GLWidget(QWidget *parent) :
     m_camera.fovy = 60.f;
     m_numObjs = 0;
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
-        this->createFramebufferObjects(this->width(), this->height());
 
-	m_numTrees = 17;
+
+	m_numTrees = 25;
 	m_treeRadius = 5.0;
 	for(unsigned int i = 0 ; i < m_numTrees; i++) {
 		m_treeAngles.append(2*(3.1415926)*float(rand() % 100)/100.0);
@@ -66,25 +66,26 @@ void GLWidget::initializeGL()
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
 
     // Set up GL_LIGHT0 with a position and lighting properties
-    GLfloat ambientLight[] = {0.1f, 0.1f, 0.1f, 1.0f};
+	GLfloat ambientLight[] = {1.0f, 1.0f, 1.0f, 1.0f};
     GLfloat diffuseLight[] = { 1.0f, 1.0f, 1.0, 1.0f };
-    GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-    GLfloat position[] = { 2.0f, 2.0f, 2.0f, 1.0f };
+	GLfloat specularLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat position[] = { 0.0f, 50.0f, 0.0f, 1.0f };
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
-    glLightfv(GL_LIGHT0, GL_POSITION, position);
+	glLightfv(GL_LIGHT0, GL_POSITION, position);
 
     // Set up material properties
     GLfloat shiny = 50;
-    GLfloat ambientMat[] = {0.0f, 0.0f, 0.0f, 0.0f};
-    GLfloat diffuseMat[] = { 0.0f, 1.0f, 0.0, 0.0f };
-    GLfloat specularMat[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+	GLfloat ambientMat[] = {0.2f, 0.2f, 0.2f, 0.0f};
+	GLfloat diffuseMat[] = { 0.0f, 0.0f, 0.0, 0.0f };
+	GLfloat specularMat[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientMat);
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseMat);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specularMat);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &shiny);
 
+	this->createFramebufferObjects(this->width(), this->height());
     //set up shaders
     createShaderPrograms();
     // Set the screen color when the color buffer is cleared (in RGBA format)
@@ -94,7 +95,7 @@ void GLWidget::initializeGL()
 
 
     glEnable(GL_LIGHTING);// Set up material properties
-    glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT0);
     // TODO: Put any additional initialization code here
 }
 /**
@@ -110,6 +111,7 @@ void GLWidget::createFramebufferObjects(int width, int height)
 		m_framebufferObjects["fbo_0"]->format().setSamples(16);
 	//FBO for doing edge detect
 		m_framebufferObjects["fbo_1"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment, GL_TEXTURE_2D, GL_RGB16F_ARB);
+		m_framebufferObjects["fbo_2"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment, GL_TEXTURE_2D, GL_RGB16F_ARB);
 }
 
 /**
@@ -131,22 +133,70 @@ void GLWidget::paintGL()
 
     // Clear the color and depth buffers to the current glClearColor
 
-	m_framebufferObjects["fbo_0"]->bind();
-    applyPerspectiveCamera(width, height);
-	renderScene(width, height);
-	m_framebufferObjects["fbo_0"]->release();
-   m_framebufferObjects["fbo_0"]->blitFramebuffer(m_framebufferObjects["fbo_1"],
-													 QRect(0, 0, width, height), m_framebufferObjects["fbo_0"],
-													  QRect(0, 0, width, height), GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-   applyOrthogonalCamera(width,height);
-	m_shaderPrograms["edge_detect"]->bind();
-	m_shaderPrograms["edge_detect"]->setUniformValue("iwidth", float(this->width()));
-	m_shaderPrograms["edge_detect"]->setUniformValue("iheight", float(this->height()));
-	glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_1"]->texture());
-    renderTexturedQuad(width, height);
-    m_shaderPrograms["edge_detect"]->release();
-	glBindTexture(GL_TEXTURE_2D, 0);
+	//render normally
+   m_framebufferObjects["fbo_0"]->bind();
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   applyPerspectiveCamera(width, height);
+   glEnable(GL_TEXTURE_CUBE_MAP);
+   glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
+   glCallList(m_skybox);
+   glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+   glDisable(GL_TEXTURE_CUBE_MAP);
+   renderScene(width, height);
+   m_framebufferObjects["fbo_0"]->release();
+
+   //run edge detect on the normal render (this is to avoid edges on the toony areas, which looks sloppy
+   m_framebufferObjects["fbo_1"]->bind();
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   applyOrthogonalCamera(width, height);
+   glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_0"]->texture());
+   m_shaderPrograms["edge_detect"]->bind();
+   m_shaderPrograms["edge_detect"]->setUniformValue("iwidth", float(this->width()));
+   m_shaderPrograms["edge_detect"]->setUniformValue("iheight", float(this->height()));
+   renderTexturedQuad(width, height);
+   m_shaderPrograms["edge_detect"]->release();
+   glBindTexture(GL_TEXTURE_2D, 0);
+   m_framebufferObjects["fbo_1"]->release();
+
+   //do a toon-shaded rendering
+   m_framebufferObjects["fbo_0"]->bind();
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   applyPerspectiveCamera(width, height);
+   glEnable(GL_TEXTURE_CUBE_MAP);
+   glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
+   glCallList(m_skybox);
+   glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+   glDisable(GL_TEXTURE_CUBE_MAP);
+   m_shaderPrograms["toon"]->bind();
+   renderScene(width, height);
+   m_shaderPrograms["toon"]->release();
+   m_framebufferObjects["fbo_0"]->release();
+
+   //combine them
+   m_framebufferObjects["fbo_2"]->bind();
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   applyOrthogonalCamera(width, height);
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_0"]->texture());
+   glActiveTexture(GL_TEXTURE2);
+   glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_1"]->texture());
+   m_shaderPrograms["combine"]->bind();
+   m_shaderPrograms["combine"]->setUniformValue("tex1", 1);
+   m_shaderPrograms["combine"]->setUniformValue("tex2", 2);
+   renderTexturedQuad(width, height);
+   m_shaderPrograms["combine"]->release();
+   glBindTexture(GL_TEXTURE_2D, 0);
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_2D, 0);
+   m_framebufferObjects["fbo_2"]->release();
+
+   //now paint it to the screen
+   applyOrthogonalCamera(width, height);
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_2"]->texture());
+   renderTexturedQuad(width, height);
+   glBindTexture(GL_TEXTURE_2D, 0);
 
     paintText();
 }
@@ -155,17 +205,13 @@ void GLWidget::renderScene(int width, int height)
 {
 
 	//glEnable(GL_DEPTH_TEST);
-	glClear(GL_DEPTH_BUFFER_BIT);
 
-    glEnable(GL_TEXTURE_CUBE_MAP);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
-    glCallList(m_skybox);
 
 	//glEnable(GL_CULL_FACE);
 
     glEnable(GL_NORMALIZE);
     glMatrixMode(GL_MODELVIEW);
-	m_shaderPrograms["toon"]->bind();               //bind shader
+	//m_shaderPrograms["toon"]->bind();               //bind shader
    //bind shader
     //draw fire
     m_fire.updateParticles();
@@ -188,11 +234,9 @@ void GLWidget::renderScene(int width, int height)
 
     paintText();
 	glPopMatrix();
-	m_shaderPrograms["toon"]->release();            //unbind shader
+	//m_shaderPrograms["toon"]->release();            //unbind shader
 	//glDisable(GL_CULL_FACE);
    // glDisable(GL_DEPTH_TEST);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    glDisable(GL_TEXTURE_CUBE_MAP);
 }
 
 /**
@@ -290,9 +334,9 @@ void GLWidget::loadCubeMap()
 	fileList.append(new QFile("textures/negy.jpg"));///course/cs123/bin/textures/astra/negy.jpg"));
 	fileList.append(new QFile("textures/posz.jpg"));///course/cs123/bin/textures/astra/posz.jpg"));
 	fileList.append(new QFile("textures/negz.jpg"));///course/cs123/bin/textures/astra/negz.jpg"));*/
-	fileList.append(new QFile("textures/moon.jpg"));//posx
+	fileList.append(new QFile("textures/brush.jpg"));//posx
 	fileList.append(new QFile("textures/brush.jpg"));//negx
-	fileList.append(new QFile("textures/stars.jpg"));//posy
+	fileList.append(new QFile("textures/moonstars.jpg"));//posy
 	fileList.append(new QFile("textures/grass.jpg"));//negy
 	fileList.append(new QFile("textures/brush.jpg"));//posz
 	fileList.append(new QFile("textures/brush.jpg"));//negz
@@ -425,6 +469,8 @@ void GLWidget::createShaderPrograms()
     const QGLContext *ctx = context();
     m_shaderPrograms["toon"] = newShaderProgram(ctx, "shaders/toon.vert", "shaders/toon.frag");
     m_shaderPrograms["edge_detect"] = newFragShaderProgram(ctx, "shaders/edge_detect.frag");
+	m_shaderPrograms["edge_enhance"] = newFragShaderProgram(ctx, "shaders/edge_enhance.frag");
+	m_shaderPrograms["combine"] = newFragShaderProgram(ctx, "shaders/combine.frag");
 }
 QGLShaderProgram * GLWidget::newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader)
 {

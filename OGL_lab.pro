@@ -45,4 +45,6 @@ FORMS    += mainwindow.ui
 OTHER_FILES += \
     shaders/toon.frag \
     shaders/toon.vert \
-    shaders/edge_detect.frag
+    shaders/edge_detect.frag \
+    shaders/edge_enhance.frag \
+    shaders/combine.frag
