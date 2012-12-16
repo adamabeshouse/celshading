@@ -11,9 +11,10 @@ ParticleEmitter::ParticleEmitter(GLuint textureId, float3 color, float3 velocity
 {
 	m_velocity = float3(0,1,0);
 	m_fuzziness = 10;
-	m_scale = 5;
+	m_scale = 3;
         m_textureID = textureId;
-    m_particles = new Particle[maxParticles];
+	m_maxParticles = 150;
+	m_particles = new Particle[m_maxParticles];
     resetParticles();
 
     for (unsigned i = 0; i < m_maxParticles; ++i)
@@ -88,7 +89,7 @@ void ParticleEmitter::updateParticles()
    m_particles[i].dir.y += m_particles[i].force.y;
    m_particles[i].dir.z += m_particles[i].force.z;*/
    m_particles[i].life -= m_particles[i].decay;
-   if(m_particles[i].life <= 0 || m_particles[i].pos.y > 14) {
+   if(m_particles[i].life <= 0 || m_particles[i].pos.y > 20) {
     m_particles[i].active = false;
    }
    if(m_particles[i].pos.y > 11) {
@@ -122,13 +123,13 @@ void ParticleEmitter::drawParticles()
    //frontside
    glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
    glPushMatrix();
-   float scalef = pow((14.0 - m_particles[i].pos.y)/14.0,3)*m_scale;
+   float scalef = pow((20.0 - m_particles[i].pos.y)/20.0,3)*m_scale;
    glLoadIdentity();
 
    glTranslatef(x,y,z);
    glScalef(scalef, scalef, scalef);
    glBegin(GL_TRIANGLES);
-   m_sphere.renderSelf(4,4);
+   m_sphere.renderSelf(5,5);
    glEnd();
    glPopMatrix();
 

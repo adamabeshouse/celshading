@@ -133,6 +133,8 @@ void GLWidget::paintGL()
     // Clear the color and depth buffers to the current glClearColor
 
 
+
+	m_fire.updateParticles();
 	//render normally
    m_framebufferObjects["fbo_0"]->bind();
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -211,8 +213,7 @@ void GLWidget::renderScene(int width, int height)
     glMatrixMode(GL_MODELVIEW);
 	//m_shaderPrograms["toon"]->bind();               //bind shader
    //bind shader
-    //draw fire
-    m_fire.updateParticles();
+	//draw fire
 	m_fire.drawParticles();
     glPushMatrix();
     glTranslatef(0.0, 0.0, 15.0);
