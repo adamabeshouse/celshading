@@ -24,7 +24,7 @@ GLWidget::GLWidget(QWidget *parent) :
     m_camera.fovy = 60.f;
     m_numObjs = 0;
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
-	this->createFramebufferObjects(this->width(), this->height());
+        this->createFramebufferObjects(this->width(), this->height());
 
 	m_numTrees = 8;
 	m_treeRadius = 150.0;
@@ -105,10 +105,9 @@ void GLWidget::initializeGL()
 void GLWidget::createFramebufferObjects(int width, int height)
 {
 	// Allocate the main framebuffer object for rendering the scene to
-	m_framebufferObjects["fbo_0"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment,GL_TEXTURE_2D, GL_RGB16F_ARB);
+        m_framebufferObjects["fbo_0"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::Depth,GL_TEXTURE_2D, GL_RGB16F_ARB);
 	//FBO for doing edge detect
-	//m_framebufferObjects["fbo_1"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment,
-		//													 GL_TEXTURE_2D, GL_RGB16F_ARB);
+        m_framebufferObjects["fbo_1"] = new QGLFramebufferObject(width, height, QGLFramebufferObject::NoAttachment, GL_TEXTURE_2D, GL_RGB16F_ARB);
 }
 
 /**
@@ -130,13 +129,12 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-  //  glEnable(GL_CULL_FACE);
-    //glColor3f(.5,.5,1);
-	glEnable(GL_TEXTURE_CUBE_MAP);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
-	glCallList(m_skybox);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_TEXTURE_CUBE_MAP);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
+    glCallList(m_skybox);
     glPushMatrix();
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 
 	if (m_shouldRotate) m_camera.theta += .005; ;
@@ -144,9 +142,8 @@ void GLWidget::paintGL()
 		//objects.at(0).vboDraw();
 		//m_obj.vboDraw();
     }else{
-;
         glEnable(GL_NORMALIZE);
-      //  glMatrixMode(GL_MODELVIEW);
+        glMatrixMode(GL_MODELVIEW);
 		//m_framebufferObjects["fbo_0"]->bind();
 		m_shaderPrograms["toon"]->bind();               //bind shader
 		//draw fire
@@ -160,37 +157,25 @@ void GLWidget::paintGL()
         objects.at(0).draw();
         glPushMatrix();
         glTranslatef(0.0, 0.0, 15.0);
-		glScalef(10, 10, 10);
+        glScalef(10, 10, 10);
         objects.at(1).draw();
-		glPopMatrix();
-		glPushMatrix();
-		glScalef(0.6,0.6,0.6);
-		/*for(unsigned int h=0;h<m_numTrees;h++) {
-			glPushMatrix();
-			glScalef(m_treeSizes[h], m_treeSizes[h], m_treeSizes[h]);
-			glTranslatef(m_treeRadius*cos(m_treeAngles[h]),0.0,m_treeRadius*sin(m_treeAngles[h]));
-			objects.at(2).draw();
-			glPopMatrix();
-		}*/
-		glPopMatrix();
-		m_shaderPrograms["toon"]->release();            //unbind shader
-		//m_framebufferObjects["fbo_0"]->release();
-		/*//now do outlines
-		m_framebufferObjects["fbo_1"]->bind();
-		m_shaderPrograms["edge_detect"]->bind();
-		glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_0"]->texture());
-		renderTexturedQuad(width, height);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		m_shaderPrograms["edge_detect"]->release();
-		m_framebufferObjects["fbo_1"]->release();*/
+        glPopMatrix();
+        glPushMatrix();
+        glScalef(0.6,0.6,0.6);
+        for(unsigned int h=0;h<m_numTrees;h++) {
+                glPushMatrix();
+                glScalef(m_treeSizes[h], m_treeSizes[h], m_treeSizes[h]);
+                glTranslatef(m_treeRadius*cos(m_treeAngles[h]),0.0,m_treeRadius*sin(m_treeAngles[h]));
+                objects.at(2).draw();
+                glPopMatrix();
+        }
+        glPopMatrix();
+        m_shaderPrograms["toon"]->release();            //unbind shader
+        //m_framebufferObjects["fbo_0"]->release();
 
-		//now draw the scene to the screen as a textured quad
-		/*applyOrthogonalCamera(width, height);
-		glBindTexture(GL_TEXTURE_2D, m_framebufferObjects["fbo_0"]->texture());
-		renderTexturedQuad(width, height);
-		glBindTexture(GL_TEXTURE_2D,0);*/
 
-        //m_obj.draw();
+
+
     }
     glPopMatrix();
 
@@ -426,7 +411,7 @@ void GLWidget::createShaderPrograms()
 {
     const QGLContext *ctx = context();
     m_shaderPrograms["toon"] = newShaderProgram(ctx, "shaders/toon.vert", "shaders/toon.frag");
-	//m_shaderPrograms["edge_detect"] = newFragShaderProgram(ctx, "shaders/edge_detect.frag");
+    m_shaderPrograms["edge_detect"] = newFragShaderProgram(ctx, "shaders/edge_detect.frag");
 }
 QGLShaderProgram * GLWidget::newShaderProgram(const QGLContext *context, QString vertShader, QString fragShader)
 {
