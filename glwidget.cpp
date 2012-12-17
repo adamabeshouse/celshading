@@ -350,12 +350,12 @@ void GLWidget::loadCubeMap()
 	fileList.append(new QFile("textures/negy.jpg"));///course/cs123/bin/textures/astra/negy.jpg"));
 	fileList.append(new QFile("textures/posz.jpg"));///course/cs123/bin/textures/astra/posz.jpg"));
 	fileList.append(new QFile("textures/negz.jpg"));///course/cs123/bin/textures/astra/negz.jpg"));*/
-	fileList.append(new QFile("textures/brush.jpg"));//posx
-	fileList.append(new QFile("textures/brush.jpg"));//negx
-	fileList.append(new QFile("textures/moonstars.jpg"));//posy
+	fileList.append(new QFile("textures/brush2.jpg"));//posx
+	fileList.append(new QFile("textures/brush2.jpg"));//negx
+	fileList.append(new QFile("textures/moonclouds.jpg"));//posy
 	fileList.append(new QFile("textures/grass.jpg"));//negy
-	fileList.append(new QFile("textures/brush.jpg"));//posz
-	fileList.append(new QFile("textures/brush.jpg"));//negz
+	fileList.append(new QFile("textures/brush2.jpg"));//posz
+	fileList.append(new QFile("textures/brush2.jpg"));//negz
 	m_cubeMap = ResourceLoader::loadCubeMap(fileList);
 }
 
