@@ -20,7 +20,7 @@ void OrbitCamera::mouseWheel(float delta, Vector3 * target)
 {
 	float ndelta = delta/19.0;
 	Vector3 newCenter = *target - Vector3::fromAngles(theta, phi) * ndelta;
-	if(newCenter.dot(newCenter) < 70000) {
+	if(newCenter.x*newCenter.x + newCenter.z*newCenter.z < 14000 && newCenter.y < 150  && newCenter.y >=2) {
 		*target = newCenter;
 	}
 }

@@ -11,7 +11,7 @@ ParticleEmitter::ParticleEmitter(GLuint textureId, float3 color, float3 velocity
 {
 	m_velocity = float3(0,0.3,0);
 	m_fuzziness = 10;
-	m_scale = 3;
+	m_scale = 4;
         m_textureID = textureId;
 	m_maxParticles = 400;
 	m_particles = new Particle[m_maxParticles];
@@ -40,7 +40,7 @@ void ParticleEmitter::resetParticle(unsigned i)
 {
     m_particles[i].pos.zero();
     m_particles[i].life = 1.0;
-	m_particles[i].decay = urand(0.01, 0.15);
+	m_particles[i].decay = urand(0.0, 0.15);
 	m_particles[i].color.r = m_color.x;
 	m_particles[i].color.g = m_color.y;
 	m_particles[i].color.b = m_color.z;
@@ -71,7 +71,7 @@ void ParticleEmitter::resetParticles()
   * calculations and maintain the life property of each particle.
   */
 float radius_function(float life) {
-	return 16.0/(life+5);
+	return 28.0/(life+5);
 }
 
 void ParticleEmitter::updateParticles()
@@ -89,13 +89,13 @@ void ParticleEmitter::updateParticles()
    m_particles[i].dir.y += m_particles[i].force.y;
    m_particles[i].dir.z += m_particles[i].force.z;*/
    m_particles[i].life -= m_particles[i].decay;
-   if(m_particles[i].life <= 0 || m_particles[i].pos.y > 20) {
+   if(m_particles[i].life <= 0 || m_particles[i].pos.y > 22) {
     m_particles[i].active = false;
    }
    if(m_particles[i].pos.y > 11) {
 	   m_particles[i].color -= (m_particles[i].color - float3(0.912,0.912,0.412))/20;
    } else {
-	   m_particles[i].color -= (m_particles[i].color - float3(0.839, 0.461, 0.169) - float3(urand(0,0.2), urand(0,0.2), urand(0,0.2)));
+	   m_particles[i].color -= (m_particles[i].color - float3(1.0, 0.843, 0) - float3(urand(0,0.2), urand(0,0.2), urand(0,0.2)));
    }
 
   }
@@ -123,7 +123,7 @@ void ParticleEmitter::drawParticles()
    //frontside
    glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
    glPushMatrix();
-   float scalef = pow((17.0 - m_particles[i].pos.y)/17.0,3)*m_scale;
+   float scalef = pow((22.0 - m_particles[i].pos.y)/22.0,3)*m_scale;
    glLoadIdentity();
 
    glTranslatef(x,y,z);

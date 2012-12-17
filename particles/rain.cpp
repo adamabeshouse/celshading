@@ -11,7 +11,7 @@ m_force(force)
 {
 m_velocity = float3(0,-5,0);
 m_fuzziness = 10;
-m_scale = 4;
+m_scale = 3;
 m_textureID = textureId;
 m_maxParticles = 300;
 m_particles = new Particle[300];
@@ -113,11 +113,11 @@ void Rain::drawParticles()
    //frontside
    glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, .2);
    glPushMatrix();
-   float scalef = .15;
+   float scalef = .15*m_scale;
    glLoadIdentity();
 
    glTranslatef(x,y,z);
-   glScalef(scalef, 8*scalef, scalef);
+   glScalef(scalef, 4*scalef, scalef);
    glBegin(GL_TRIANGLES);
    m_sphere.renderSelf(4,4);
    glEnd();

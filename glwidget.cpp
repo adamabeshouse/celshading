@@ -17,6 +17,7 @@ GLWidget::GLWidget(QWidget *parent) :
     QGLWidget(parent), m_timer(this), m_fps(0.0f), m_prevFps(0.0f), m_increment(0), m_font("Deja Vu Sans Mono", 8, 4),
 	m_defaultModel("/course/cs123/data/mesh/sponzaLab.obj"), m_captureMouse(true), m_shouldRotate(false), m_useVbo(false)
 {
+	//this->loadTexture("textures/grass.jpg");
     // Set up the camera
     m_camera.center = Vector3(0.f, 50.f, 0.f);
     m_cameraTarget = m_camera.center;
@@ -26,10 +27,10 @@ GLWidget::GLWidget(QWidget *parent) :
     m_camera.fovy = 60.f;
     m_numObjs = 0;
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
-	m_numTrees = 20;
+	m_numTrees = 40;
 	m_treeRadius = 5.0;
 	for(unsigned int i = 0 ; i < m_numTrees; i++) {
-		m_treeAngles.append(2*(3.1415926)*float(rand() % 100)/100.0);
+		m_treeAngles.append(i*2*(3.1415926)/float(m_numTrees) + urand(-0.01, 0.01));
 		m_treeSizes.append(urand(0.9, 1.1)*40);
 	}
 	m_timer.start(1000.0f / MAX_FPS);
@@ -38,6 +39,19 @@ GLWidget::GLWidget(QWidget *parent) :
 GLWidget::~GLWidget()
 {
 
+	// Reallocate the framebuffers with the new window dimensions
+	foreach (QGLFramebufferObject *fbo, m_framebufferObjects)
+	{
+		delete fbo;
+	}
+	foreach (QGLShaderProgram *shader, m_shaderPrograms)
+	{
+		delete shader;
+	}
+	foreach (QFile *file, m_fileList)
+	{
+		delete file;
+	}
 }
 
 /**
@@ -76,8 +90,8 @@ void GLWidget::initializeGL()
 
     // Set up material properties
     GLfloat shiny = 50;
-	GLfloat ambientMat[] = {0.2f, 0.2f, 0.2f, 0.0f};
-	GLfloat diffuseMat[] = { 0.0f, 0.0f, 0.0, 0.0f };
+	GLfloat ambientMat[] = {0.1f, 0.1f, 0.1f, 0.0f};
+	GLfloat diffuseMat[] = { 1.0f, 1.0f, 1.0, 0.0f };
 	GLfloat specularMat[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambientMat);
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuseMat);
@@ -128,7 +142,12 @@ void GLWidget::paintGL()
     m_fps = 1000.f / (fpsTime - m_prevTime);
     m_prevTime = fpsTime;
 
-	m_camera.center -= (m_camera.center - m_cameraTarget)/3.0;
+
+	if (abs((m_camera.center - m_cameraTarget).length()) <=1) {
+		m_camera.center = m_cameraTarget;
+	} else {
+		m_camera.center -= (m_camera.center - m_cameraTarget)/1.4;
+	}
 
     // Clear the color and depth buffers to the current glClearColor
 
@@ -139,11 +158,7 @@ void GLWidget::paintGL()
    m_framebufferObjects["fbo_0"]->bind();
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    applyPerspectiveCamera(width, height);
-   glEnable(GL_TEXTURE_CUBE_MAP);
-   glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMap);
-   glCallList(m_skybox);
-   glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-   glDisable(GL_TEXTURE_CUBE_MAP);
+
    renderScene(width, height);
    m_framebufferObjects["fbo_0"]->release();
 
@@ -214,10 +229,14 @@ void GLWidget::renderScene(int width, int height)
 	//m_shaderPrograms["toon"]->bind();               //bind shader
    //bind shader
 	//draw fire
+	glPushMatrix();
+	glScalef(30,30,30);
 	m_fire.drawParticles();
+	glPopMatrix();
     glPushMatrix();
     glTranslatef(0.0, 0.0, 15.0);
    glScalef(10, 10, 10);
+   glRotatef(160, 0, 1, 0);
     objects.at(1).draw();
     glPopMatrix();
     glPushMatrix();
@@ -232,11 +251,11 @@ void GLWidget::renderScene(int width, int height)
 	glPopMatrix();
 	glPushMatrix();
 	glLoadIdentity();
-	glTranslatef(2.1,3.5,0);
-	glScalef(4,4,4);
+	glTranslatef(2.8,3.8,0);
+	glScalef(6.3,6.3,6.3);
 	objects.at(3).draw();
 	glPopMatrix();
-	renderGround();
+	//renderGround();
 
     paintText();
 	glPopMatrix();
@@ -246,20 +265,24 @@ void GLWidget::renderScene(int width, int height)
 }
 
 void GLWidget::renderGround() {
-	float extent = 10000;//this comes from the skybox
-	glColor3f(0,1,0);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	float extent = 100;//this comes from the skybox
+	bindGroundTexture();
+	glPushMatrix();
+	glLoadIdentity();
+	glTranslatef(0,-1.2,0);
+	//glColor3f(0,1,0);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f,0.0f);
 	glVertex3f(-extent, 0, -extent);
-	glTexCoord2f(0.0f,1.0f);
+	glTexCoord2f(1.0f,0.0f);
 	glVertex3f(-extent, 0, extent);
 	glTexCoord2f(1.0f,1.0f);
 	glVertex3f(extent, 0, extent);
-	glTexCoord2f(1.0f,0.0f);
+	glTexCoord2f(0.0f,1.0f);
 	glVertex3f(extent, 0, -extent);
+	glPopMatrix();
 	glEnd();
+	releaseGroundTexture();
 }
 
 /**
@@ -356,20 +379,20 @@ void GLWidget::addObjects() {
  **/
 void GLWidget::loadCubeMap()
 {
-	QList<QFile *> fileList;
+
 	/*fileList.append(new QFile("textures/posx.jpg"));//course/cs123/bin/textures/astra/posx.jpg"));
 	fileList.append(new QFile("textures/negx.jpg"));//course/cs123/bin/textures/astra/negx.jpg"));
 	fileList.append(new QFile("textures/posy.jpg"));//course/cs123/bin/textures/astra/posy.jpg"));
 	fileList.append(new QFile("textures/negy.jpg"));///course/cs123/bin/textures/astra/negy.jpg"));
 	fileList.append(new QFile("textures/posz.jpg"));///course/cs123/bin/textures/astra/posz.jpg"));
 	fileList.append(new QFile("textures/negz.jpg"));///course/cs123/bin/textures/astra/negz.jpg"));*/
-	fileList.append(new QFile("textures/brush2.jpg"));//posx
-	fileList.append(new QFile("textures/brush2.jpg"));//negx
-	fileList.append(new QFile("textures/moonclouds.jpg"));//posy
-	fileList.append(new QFile("textures/grass.jpg"));//negy
-	fileList.append(new QFile("textures/brush2.jpg"));//posz
-	fileList.append(new QFile("textures/brush2.jpg"));//negz
-	m_cubeMap = ResourceLoader::loadCubeMap(fileList);
+	m_fileList.append(new QFile("textures/brush2.jpg"));//posx
+	m_fileList.append(new QFile("textures/brush2.jpg"));//negx
+	m_fileList.append(new QFile("textures/moonclouds.jpg"));//posy
+	m_fileList.append(new QFile("textures/grass.jpg"));//negy
+	m_fileList.append(new QFile("textures/brush2.jpg"));//posz
+	m_fileList.append(new QFile("textures/brush2.jpg"));//negz
+	m_cubeMap = ResourceLoader::loadCubeMap(m_fileList);
 }
 
 /**
@@ -448,7 +471,7 @@ void GLWidget::applyPerspectiveCamera(float width, float height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(m_camera.fovy, ratio, .01, 10000000.f);
+	gluPerspective(m_camera.fovy, ratio, .01, 10000000.f);
     gluLookAt(eye.x, eye.y, eye.z, eye.x + dir.x, eye.y + dir.y, eye.z + dir.z,
               m_camera.up.x, m_camera.up.y, m_camera.up.z);
     glMatrixMode(GL_MODELVIEW);
@@ -515,4 +538,46 @@ QGLShaderProgram * GLWidget::newFragShaderProgram(const QGLContext *context, QSt
 	program->link();
 	return program;
 }
+GLuint GLWidget::loadTexture(const QString &filename)
+{
+	// Make sure the image file exists
+	QFile file(filename);
+	if (!file.exists())
+		return -1;
+
+	// Load the file into memory
+	QImage image;
+	image.load(file.fileName());
+	image = image.mirrored(false, true);
+	m_groundTexture = QGLWidget::convertToGLFormat(image);
+
+	// Generate a new OpenGL texture ID to put our image into
+	glGenTextures(1, &m_groundID);
+
+	glBindTexture(GL_TEXTURE_2D, m_groundID);
+	//gluBuild2DMipmaps(GL_TEXTURE_2D, 3, m_groundTexture.width(), m_groundTexture.height(), GL_RGBA, GL_UNSIGNED_BYTE, m_groundTexture.bits());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// Set coordinate wrapping options
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+
+	return this->m_groundID;
+}
+
+void GLWidget::bindGroundTexture() {
+	// Make the texture we just created the new active texture
+
+	glBindTexture(GL_TEXTURE_2D, m_groundID);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, m_groundTexture.width(), m_groundTexture.height(), GL_RGBA, GL_UNSIGNED_BYTE, m_groundTexture.bits());
+
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+}
+
+void GLWidget::releaseGroundTexture() {
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 

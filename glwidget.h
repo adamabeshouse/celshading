@@ -58,6 +58,7 @@ private:
     float m_increment;
     float m_prevTime;
 	void loadCubeMap();
+	QList<QFile *> m_fileList;
 	void createSobelKernel(GLfloat* kernel, GLfloat* offsets);
     QHash<QString, QGLShaderProgram *> m_shaderPrograms; // hash map of all shader programs
     QHash<QString, QGLFramebufferObject *> m_framebufferObjects; // hash map of all framebuffer objects
@@ -82,6 +83,11 @@ private:
 	GLuint groundTex;
 	QVector<float> m_treeAngles;
 	QVector<float> m_treeSizes;
+	GLuint loadTexture(const QString &filename);
+	GLuint m_groundID;
+	QImage m_groundTexture;
+	void bindGroundTexture();
+	void releaseGroundTexture();
 };
 
 #endif // GLWIDGET_H

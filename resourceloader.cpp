@@ -96,10 +96,10 @@ GLuint ResourceLoader::loadSkybox()
 	glTexCoord3f(-1.0f,  1.0f,  1.0f); glVertex3f(-extent,  extent,  extent);
 	glTexCoord3f(-1.0f,  1.0f, -1.0f); glVertex3f(-extent,  extent, -extent);
 
-	glTexCoord3f( 1.0f, -1.0f, -1.0f); glVertex3f( extent, -extent, -extent);
-	glTexCoord3f( 1.0f, -1.0f,  1.0f); glVertex3f( extent, -extent,  extent);
-	glTexCoord3f(-1.0f, -1.0f,  1.0f); glVertex3f(-extent, -extent,  extent);
-	glTexCoord3f(-1.0f, -1.0f, -1.0f); glVertex3f(-extent, -extent, -extent);
+	glTexCoord3f( 1.0f, -1.0f, -1.0f); glVertex3f( extent, -1, -extent);
+	glTexCoord3f( 1.0f, -1.0f,  1.0f); glVertex3f( extent, -1,  extent);
+	glTexCoord3f(-1.0f, -1.0f,  1.0f); glVertex3f(-extent, -1,  extent);
+	glTexCoord3f(-1.0f, -1.0f, -1.0f); glVertex3f(-extent, -1, -extent);
 
     glEnd();
     glEndList();

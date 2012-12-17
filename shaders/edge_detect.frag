@@ -16,7 +16,7 @@ void main(void) {
 		float gy = -1.0*A00 - 2.0*A10 - A20 + A02 + 2.0*A12 + A22;
 		float d = sqrt(gx*gx + gy*gy);
 
-		float threshold = 0.5;
+		float threshold = 0.1;
 		d = min(1.0, d);
 		vec4 edge = vec4(1.0,1.0,1.0,0);
 		if(d < threshold) {
