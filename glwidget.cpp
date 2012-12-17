@@ -26,7 +26,7 @@ GLWidget::GLWidget(QWidget *parent) :
     m_camera.fovy = 60.f;
     m_numObjs = 0;
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(tick()));
-	m_numTrees = 40;
+	m_numTrees = 20;
 	m_treeRadius = 5.0;
 	for(unsigned int i = 0 ; i < m_numTrees; i++) {
 		m_treeAngles.append(2*(3.1415926)*float(rand() % 100)/100.0);
@@ -229,8 +229,14 @@ void GLWidget::renderScene(int width, int height)
             objects.at(2).draw();
             glPopMatrix();
     }
+	glPopMatrix();
+	glPushMatrix();
+	glLoadIdentity();
+	glTranslatef(2.1,3.5,0);
+	glScalef(4,4,4);
+	objects.at(3).draw();
+	glPopMatrix();
 	renderGround();
-   // glPopMatrix();
 
     paintText();
 	glPopMatrix();
@@ -241,6 +247,7 @@ void GLWidget::renderScene(int width, int height)
 
 void GLWidget::renderGround() {
 	float extent = 10000;//this comes from the skybox
+	glColor3f(0,1,0);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glBegin(GL_QUADS);
@@ -328,9 +335,15 @@ void GLWidget::addObjects() {
 		exit(1);
 
 	}
+	OBJ logs;
+	if (! logs.read("models/logs.obj")){
+		std::cout <<"it didn't load!";
+		exit(1);
+	}
     objects.append(dragon);
     objects.append(lego);
 	objects.append(tree1);
+	objects.append(logs);
 
 	m_skybox = ResourceLoader::loadSkybox();
 	loadCubeMap();

@@ -9,11 +9,11 @@ ParticleEmitter::ParticleEmitter(GLuint textureId, float3 color, float3 velocity
                     m_fuzziness(fuzziness), m_scale(scale), m_color(color), m_velocity(velocity),
                     m_force(force)
 {
-	m_velocity = float3(0,1,0);
+	m_velocity = float3(0,0.3,0);
 	m_fuzziness = 10;
 	m_scale = 3;
         m_textureID = textureId;
-	m_maxParticles = 150;
+	m_maxParticles = 400;
 	m_particles = new Particle[m_maxParticles];
     resetParticles();
 
@@ -71,7 +71,7 @@ void ParticleEmitter::resetParticles()
   * calculations and maintain the life property of each particle.
   */
 float radius_function(float life) {
-	return 20.0/(life+5);
+	return 16.0/(life+5);
 }
 
 void ParticleEmitter::updateParticles()
@@ -123,13 +123,13 @@ void ParticleEmitter::drawParticles()
    //frontside
    glColor4f(m_particles[i].color.r, m_particles[i].color.g, m_particles[i].color.b, sqrt(m_particles[i].life));
    glPushMatrix();
-   float scalef = pow((20.0 - m_particles[i].pos.y)/20.0,3)*m_scale;
+   float scalef = pow((17.0 - m_particles[i].pos.y)/17.0,3)*m_scale;
    glLoadIdentity();
 
    glTranslatef(x,y,z);
    glScalef(scalef, scalef, scalef);
    glBegin(GL_TRIANGLES);
-   m_sphere.renderSelf(5,5);
+   m_sphere.renderSelf(4,4);
    glEnd();
    glPopMatrix();
 
